@@ -1,4 +1,4 @@
-package edu.hm.vss.prak3;
+package edu.hm.vss.producer_consumer;
 
 public class ConsumerThread extends AbstractWorkerThread {
 

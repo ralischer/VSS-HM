@@ -3,14 +3,19 @@ package edu.hm.vss.dining_philosopher;
 import java.util.Collections;
 import java.util.List;
 
-public class Philosopher extends Thread {
+/*
+ * This class represents a philosopher, who can go to eat and go to meditate. 
+ * The duration of eating and meditation can be specified
+ * 
+ */
+public class Philosopher extends Thread{
 
-	private int meditationDuration;
-	private int eatDuration;
-	private final DinnerGuardian controller;
-	private final int id;
-	private static int idCounter = 0;
-	private final static Object PHILOSOPHER_LOCK = new Object();
+	private int						meditationDuration;
+	private int						eatDuration;
+	private final DinnerGuardian	controller;
+	private final int				id;
+	private static int				idCounter			= 0;
+	private final static Object		PHILOSOPHER_LOCK	= new Object();
 
 	public Philosopher(int eatDuration, int meditationDuration,
 			DinnerGuardian controller) {
@@ -33,6 +38,8 @@ public class Philosopher extends Thread {
 
 		// eat and meditate forever
 		while (true) {
+
+			// enter dining room
 			synchronized (controller) {
 				while (!controller.enterDiningRoom(this)) {
 					try {
@@ -40,7 +47,8 @@ public class Philosopher extends Thread {
 						// wait until an other philosopher leaves the table,
 						// then try again to enter
 						controller.wait();
-					} catch (InterruptedException e) {
+					}
+					catch (InterruptedException e) {
 						outputStatus("unexpected interrupt while waiting for a seat");
 						System.exit(-1);
 					}
@@ -48,6 +56,7 @@ public class Philosopher extends Thread {
 
 			}
 
+			// get a free seat
 			Object[] forks = null;
 			int seatId = -1;
 			while (forks == null) {
@@ -55,7 +64,8 @@ public class Philosopher extends Thread {
 				Collections.shuffle(freeSeats);
 				for (Integer testSeat : freeSeats) {
 
-					// sit down if seat hasn't been occupied meanwhile
+					// sit down if seat hasn't been occupied by another
+					// philosopher
 					forks = controller.getForks(testSeat, this);
 					if (forks != null) {
 						seatId = testSeat;
@@ -64,18 +74,22 @@ public class Philosopher extends Thread {
 					}
 				}
 			}
+
+			// eat
 			try {
 				eat(forks[0], forks[1], eatDuration);
-			} catch (InterruptedException e1) {
+			}
+			catch (InterruptedException e1) {
 				outputStatus("unexpected interrupt while eating");
 				System.exit(-1);
 			}
-			
+
 			// meditate
 			controller.leaveDiningRoom(seatId, this);
-			try {				
+			try {
 				Thread.sleep(meditationDuration);
-			} catch (InterruptedException e) {
+			}
+			catch (InterruptedException e) {
 				outputStatus("unexpected interrupt while meditating");
 				System.exit(-1);
 			}
@@ -107,7 +121,7 @@ public class Philosopher extends Thread {
 		}
 	}
 
-	@Override
+	@Overrides
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

@@ -1,8 +1,11 @@
 package edu.hm.vss.dining_philosopher;
 
-public class Table {
+/*
+ * A class to represent a table with a specified amount of forks
+ */
+public class Table{
 
-	private Object[] forks;
+	private Object[]	forks;
 
 	public Table(int seats) {
 		forks = new Object[seats];

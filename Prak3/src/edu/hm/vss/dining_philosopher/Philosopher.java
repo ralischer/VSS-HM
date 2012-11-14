@@ -1,28 +1,32 @@
 package edu.hm.vss.dining_philosopher;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
 
 /*
  * This class represents a philosopher, who can go to eat and go to meditate. 
  * The duration of eating and meditation can be specified
  * 
  */
-public class Philosopher extends Thread{
+public class Philosopher extends Thread {
 
-	private int						meditationDuration;
-	private int						eatDuration;
-	private final DinnerGuardian	controller;
-	private final int				id;
-	private static int				idCounter			= 0;
-	private final static Object		PHILOSOPHER_LOCK	= new Object();
+	private int meditationDuration;
+	private int eatDuration;
+	private int maxEatingDiscrepance;
+	private final int GREEDY_PENALTY = 10;
+	private final int ID;
+	private static int idCounter = 0;
+	private final static Object PHILOSOPHER_LOCK = new Object();
+	private int numberEatings = 0;
+	private final Table table;
 
 	public Philosopher(int eatDuration, int meditationDuration,
-			DinnerGuardian controller) {
+			int maxEatingDiscrepance, Table t) {
 		this.meditationDuration = meditationDuration;
 		this.eatDuration = eatDuration;
-		this.controller = controller;
-		this.id = idCounter++;
+		this.ID = idCounter++;
+		this.table = t;
+		this.maxEatingDiscrepance = maxEatingDiscrepance;
 	}
 
 	public void setSleepDuration(int sleepDuration) {
@@ -33,67 +37,110 @@ public class Philosopher extends Thread{
 		this.eatDuration = eatDuration;
 	}
 
+	public int getEatings() {
+		return numberEatings;
+	}
+
 	@Override
 	public void run() {
 
 		// eat and meditate forever
 		while (true) {
-
-			// enter dining room
-			synchronized (controller) {
-				while (!controller.enterDiningRoom(this)) {
-					try {
-
-						// wait until an other philosopher leaves the table,
-						// then try again to enter
-						controller.wait();
-					}
-					catch (InterruptedException e) {
-						outputStatus("unexpected interrupt while waiting for a seat");
-						System.exit(-1);
-					}
+			boolean greedyWait = false;
+			long timestamp = System.currentTimeMillis();
+			while (hasToWait()) {
+				greedyWait = true;
+				try {
+					Thread.sleep(GREEDY_PENALTY);
+				} catch (InterruptedException e) {
+					outputStatus("unexpected interrupt while penalty sleeping");
+					e.printStackTrace();
 				}
-
 			}
-
-			// get a free seat
+			if (greedyWait) {
+				outputStatus(
+						"had to wait for %d msec because i am greedy !!!!",
+						(System.currentTimeMillis() - timestamp));
+			}
+			int seatNr = getSeat();
 			Object[] forks = null;
-			int seatId = -1;
-			while (forks == null) {
-				List<Integer> freeSeats = controller.getFreeSeats();
-				Collections.shuffle(freeSeats);
-				for (Integer testSeat : freeSeats) {
-
-					// sit down if seat hasn't been occupied by another
-					// philosopher
-					forks = controller.getForks(testSeat, this);
-					if (forks != null) {
-						seatId = testSeat;
-						outputStatus("took place at seat id %d", seatId);
-						break;
+			try {
+				forks = table.waitForSeat(seatNr, this);
+			} catch (InterruptedException e) {
+				outputStatus("unexpected interrupt while waiting for a seat");
+				e.printStackTrace();
+			}
+			try {
+				synchronized (forks[0]) {
+					synchronized (forks[1]) {
+						outputStatus("nom nom nom  (eating) at seat ID %d ",
+								seatNr);
+						Thread.sleep(this.eatDuration);
+						outputStatus("that was tasty ! now i need to meditate (finished eating)");
 					}
 				}
-			}
-
-			// eat
-			try {
-				eat(forks[0], forks[1], eatDuration);
-			}
-			catch (InterruptedException e1) {
+			} catch (InterruptedException e) {
 				outputStatus("unexpected interrupt while eating");
-				System.exit(-1);
+				e.printStackTrace();
 			}
-
-			// meditate
-			controller.leaveDiningRoom(seatId, this);
+			numberEatings++;
+			table.leaveSeat(seatNr);
 			try {
 				Thread.sleep(meditationDuration);
-			}
-			catch (InterruptedException e) {
+			} catch (InterruptedException e) {
 				outputStatus("unexpected interrupt while meditating");
-				System.exit(-1);
 			}
 		}
+	}
+
+	private boolean hasToWait() {
+		Set<Philosopher> philosophers = table.getPhilosophers();
+		int lowestEatAmount = Integer.MAX_VALUE;
+		for (Philosopher p : philosophers) {
+			int pEating = p.getEatings();
+			if (pEating < lowestEatAmount) {
+				lowestEatAmount = pEating;
+			}
+		}
+		return this.getEatings() > lowestEatAmount + maxEatingDiscrepance;
+	}
+
+	private int getSeat() {
+		int minAmount = Integer.MAX_VALUE;
+		ArrayList<Integer> bestSeats = new ArrayList<>();
+		int[] seatOccupancy = new int[table.size()];
+		for (int i = 0; i < table.size(); i++) {
+			seatOccupancy[i] = table.getWaitingPhilosophers(i);
+			if (seatOccupancy[i] < minAmount) {
+				bestSeats.clear();
+				minAmount = seatOccupancy[i];
+				bestSeats.add(i);
+			} else if (seatOccupancy[i] == minAmount) {
+				bestSeats.add(i);
+			}
+		}
+		// only 1 optimal Seat found
+		if (bestSeats.size() == 1) {
+			return bestSeats.get(0);
+		}
+
+		int lowestHeuristic = Integer.MAX_VALUE;
+		int bestSeatID = -1;
+
+		for (int i = 0; i < bestSeats.size(); i++) {
+			int currentSeat = bestSeats.get(i);
+
+			// heuristic value : number of people waiting at the left and right
+			// seat
+			int heuristic = seatOccupancy[(i + 1) % seatOccupancy.length]
+					+ seatOccupancy[(i - 1 + seatOccupancy.length)
+							% seatOccupancy.length];
+			if (heuristic < lowestHeuristic) {
+				lowestHeuristic = heuristic;
+				bestSeatID = currentSeat;
+			}
+		}
+		return bestSeatID;
 	}
 
 	/*
@@ -101,23 +148,8 @@ public class Philosopher extends Thread{
 	 */
 	public void outputStatus(String status, Object... args) {
 		synchronized (PHILOSOPHER_LOCK) {
-			System.out.printf("ID %2d : \t", id);
+			System.out.printf("ID %2d : \t", ID);
 			System.out.printf(status + "\n", args);
-		}
-	}
-
-	/*
-	 * get an exclusive handle for the left and right fork, then eat and
-	 * implicitly release the forks afterward
-	 */
-	private void eat(Object leftFork, Object rightFork, int eatTime)
-			throws InterruptedException {
-		synchronized (leftFork) {
-			synchronized (rightFork) {
-				outputStatus("nom nom nom  (eating)");
-				Thread.sleep(eatTime);
-				outputStatus("that was tasty ! now i need to meditate (finished eating)");
-			}
 		}
 	}
 
@@ -125,7 +157,7 @@ public class Philosopher extends Thread{
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + id;
+		result = prime * result + ID;
 		return result;
 	}
 
@@ -138,7 +170,7 @@ public class Philosopher extends Thread{
 		if (getClass() != obj.getClass())
 			return false;
 		Philosopher other = (Philosopher) obj;
-		if (id != other.id)
+		if (ID != other.ID)
 			return false;
 		return true;
 	}

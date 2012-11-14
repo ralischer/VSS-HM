@@ -1,32 +1,36 @@
 package edu.hm.vss.dining_philosopher;
 
-public class Main{
+import java.util.HashSet;
+
+public class Main {
 
 	public static void main(String[] args) {
 
-		final int seats = 30;
-		final int totalPhilosphers = 50;
-		final int hungryPhilosophers = 10;
-		final int maximumMealDifference = 10;
+		final int seats = 20; // minimum 2 seats required, since 1 seat is
+								// reserved
+		final int totalPhilosphers = 200;
+		final int hungryPhilosophers = 199;
+		final int maximumMealDifference = 1;
 
-		final int normalMeditationDuration = 50;
-		final int hungryMeditationDuration = 10;
+		final int normalMeditationDuration = 1000;
+		final int hungryMeditationDuration = 0;
 		final int eatDuration = 10;
 
-		Philosopher[] philosopher = new Philosopher[totalPhilosphers];
-		DinnerGuardian dinngerGuardian = new DinnerGuardian(seats,
-				maximumMealDifference);
+		HashSet<Philosopher> philosophers = new HashSet<>();
+		Table table = new Table(seats, philosophers);
 
 		for (int i = 0; i < totalPhilosphers - hungryPhilosophers; i++) {
-			philosopher[i] = new Philosopher(eatDuration,
-					normalMeditationDuration, dinngerGuardian);
-			philosopher[i].start();
+			Philosopher p = new Philosopher(eatDuration,
+					normalMeditationDuration, maximumMealDifference, table);
+			philosophers.add(p);
 		}
 		for (int i = totalPhilosphers - hungryPhilosophers; i < totalPhilosphers; i++) {
-			philosopher[i] = new Philosopher(eatDuration,
-					hungryMeditationDuration, dinngerGuardian);
-			philosopher[i].start();
+			Philosopher p = new Philosopher(eatDuration,
+					hungryMeditationDuration, maximumMealDifference, table);
+			philosophers.add(p);
+		}
+		for (Philosopher p : philosophers) {
+			p.start();
 		}
 	}
-
 }

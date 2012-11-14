@@ -10,7 +10,7 @@ import edu.hm.vss.aufgabe4.teil3.pingpong.Constants;
 
 public class Server extends Thread {
 	private final DatagramSocket serverSocket;
-	private byte[] receivingBuffer = new byte[1024];
+	private byte[] receivingBuffer = new byte[Constants.BUFFER_SIZE];
 	private boolean running;
 
 	public Server(int port, int timeout) throws SocketException {

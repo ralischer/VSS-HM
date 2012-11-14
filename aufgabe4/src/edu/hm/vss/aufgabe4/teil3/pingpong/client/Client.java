@@ -15,7 +15,7 @@ public class Client extends Thread{
 	private final DatagramSocket socket;
 	private final String serverIp;
 	private final int serverPort;
-	private final byte[] receiveBuffer = new byte[1024];
+	private final byte[] receiveBuffer = new byte[Constants.BUFFER_SIZE];
 	
 	public Client(String serverIp, int serverPort, int port, int timeout) throws SocketException {
 		socket = new DatagramSocket(port);

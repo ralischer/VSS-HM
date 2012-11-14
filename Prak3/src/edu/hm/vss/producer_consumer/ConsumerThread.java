@@ -14,24 +14,27 @@ public class ConsumerThread extends AbstractWorkerThread {
 			return;
 		}
 		synchronized (MONITOR) {
-			if (queue.size() == 0) {
-				synchronized (CONSUMER_MONITOR) {
+			while (queue.size() == 0) {
+				//synchronized (CONSUMER_MONITOR) {
 					try {
-						CONSUMER_MONITOR.wait();
+						MONITOR.wait();
 					} catch (InterruptedException ex) {
 						// ignored at this point
 					}
-				}
-				return;
+				//}
+				//return;
 			}
 			Data data = queue.remove(0);
 			System.out.println(getName() + " read data " + data);
-			if (queue.size() == MAX_ENTRIES - 1) {
+			
+			if (queue.size() < MAX_ENTRIES) {
 				// all producer should sleep -> notify them
-				synchronized (ProducerThread.PRODUCER_MONITOR) {
-					ProducerThread.PRODUCER_MONITOR.notifyAll();
-				}
+				//synchronized (ProducerThread.PRODUCER_MONITOR) {
+				//	ProducerThread.PRODUCER_MONITOR.notifyAll();
+				//}
+				MONITOR.notifyAll();
 			}
+
 		}
 	}
 

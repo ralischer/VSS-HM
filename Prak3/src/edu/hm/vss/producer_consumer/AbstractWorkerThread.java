@@ -7,11 +7,11 @@ import java.util.Random;
 public abstract class AbstractWorkerThread extends Thread{
 
 	protected static final int MAX_ENTRIES = 25;
-	private static final int MAX_WAIT_TIME = 2000;
-	private static final int MIN_WAIT_TIME = 300;
+	private static final int MAX_WAIT_TIME = 1;
+	private static final int MIN_WAIT_TIME = 0;
 	private static int instanceCount = 0;
 	
-	protected final Object MONITOR = new Object();
+	protected static final Object MONITOR = new Object();
 	protected static final List<Data> queue = new LinkedList<Data>();
 	private boolean running = true;
 	

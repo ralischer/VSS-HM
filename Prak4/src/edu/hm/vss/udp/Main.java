@@ -10,19 +10,20 @@ public class Main {
 		final int destinationPortSender = 6667;
 		final int sourcePortReceiver = destinationPortSender;
 		final int destinationPortReceiver = sourcePortSender;
-		final int socketTimeout = 10;
+		final int socketTimeout = 1;
 		UDPManager managerSender = new UDPManager("localhost",
 				sourcePortSender, destinationPortSender,socketTimeout) {
 		};
 		UDPManager managerReceiver = new UDPManager("localhost",
-				sourcePortReceiver, destinationPortReceiver, socketTimeout) {
+				sourcePortReceiver, destinationPortReceiver, 0) {
 		};
-		UDPSender sender = new UDPSender("ping", managerSender, 5);
+		UDPSender sender = new UDPSender("ping","pong", managerSender, 5);
 		UDPReceiver receiver = new UDPReceiver("ping", "pong", managerReceiver);
-		sender.start();
 		receiver.start();
+		sender.start();		
 		sender.join();
 		System.out.println("Sender terminated");
 		receiver.interrupt();
+		receiver.join();
 	}
 }

@@ -1,6 +1,9 @@
 package edu.hm.vss.udp;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
+
+import javax.xml.ws.handler.MessageContext;
 
 import edu.hm.vss.udp.dataStructure.UDPMessage;
 
@@ -23,47 +26,38 @@ public class UDPSender extends Thread {
 	public void run() {
 		System.out.println("running");
 		try {
-			int currentId = 0;
-			boolean wrongeMessageIdReceived = false;
 			for (int i = 0; i < sendCount;) {
-				if (!wrongeMessageIdReceived) {
-					udpManager.sendMessage(request, currentId);
+				UDPMessage udp = null;
+				udpManager.sendMessage(request);
+				udp = udpManager.receiveMessage();
+				if(udp==null){ // socket timeout
+					output("Socket timeout, redo request", udp);
+					continue;
 				}
-				wrongeMessageIdReceived = false;
-				UDPMessage udp = udpManager.receiveMessage();
-				if (udp == null) {
-					output("socket Timeout, resending the previous request",
-							null);
+				if (!response.equals(udp.message)) {
+					output("Illegal response", udp);
+					continue;
 				}
-				else if (!udp.message.equals(response)) {
-					output("received invalid response, resending previous request",
-							udp);					
+				else{
+					output("received response ",udp);
 				}
-				else if (udp.id == currentId + 1) {
-					output("valid response", udp);
-					currentId += 2;
-					i++;
-				}
-				else {
-					output("invalid id, ignore this message", udp);
-					wrongeMessageIdReceived = true;
-				}
-				
+				udpManager.sendMessage(request);
+				i++;
+
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-		} finally {
-			udpManager.close();
 		}
+
 	}
 
 	private void output(String msg, UDPMessage udp, Object... args) {
 		String udpContent;
 		if (udp != null) {
-			udpContent = String.format("  \"%s\" [%d]", udp.message, udp.id);
+			udpContent = String.format(" \"%s\"", udp.message);
 		} else
 			udpContent = "";
-		System.out.print("Sender : ");
+		System.out.printf("%d [Sender] : ",System.nanoTime());
 		System.out.printf(msg + udpContent + "%n", args);
 	}
 }

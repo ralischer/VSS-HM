@@ -10,6 +10,7 @@ public class UDPReceiver extends Thread {
 	private String request;
 	private UDPManager manager;
 	private int lastReceivedId = -1;
+	private int lastRespondedId = -1;
 
 	public UDPReceiver(String request, String response, UDPManager manager)
 			throws IOException {
@@ -27,36 +28,25 @@ public class UDPReceiver extends Thread {
 		while (!interrupted()) {
 			try {
 				UDPMessage udp = manager.receiveMessage();
+				if (udp == null) { //socket timeout
+					continue;
+				}
+
 				if (!udp.message.equals(request)) {
-					output("invalid message ", udp);
+					output("invalid request ", udp);
 					continue;
+				} else {
+					output("received request", udp);
 				}
-				if ((lastReceivedId < 0)// first message
-						|| (lastReceivedId + 2 == udp.id)) {// correct id
-					lastReceivedId = udp.id;
-					output("valid request", udp);
-				}
-				// previous id, prolly this packet was lost
-				else if (lastReceivedId == udp.id) {
-					output("previous id, resend previous answer", udp);
-				}
-				// package loss happened don't send anything since the next
-				// rule should have already sent it
-				else if (lastReceivedId > udp.id) {
-					output("old id, i should already have sent it", udp);
-					continue;
-				}
-				// received a higher id than expeceted, the other requests
-				// should be on the way so i send all packets until this id
-				else {
-					int discrepancy = udp.id - (lastReceivedId + 2);
-					discrepancy /= 2;
-					for (int i = 0; i < discrepancy; i++) {
-						sendAnswer();
-						lastReceivedId += 2;
+				manager.sendMessage(response);
+				udp = null;
+				while (udp == null) {
+					udp = manager.receiveMessage();
+					if (!udp.message.equals(request)) {
+						output("invalid response prior to request", udp);
+						udp = null;
 					}
 				}
-				sendAnswer();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -68,10 +58,10 @@ public class UDPReceiver extends Thread {
 	private void output(String msg, UDPMessage udp, Object... args) {
 		String udpContent;
 		if (udp != null) {
-			udpContent = String.format("  \"%s\" [%d]", udp.message, udp.id);
+			udpContent = String.format("  \"%s\"", udp.message);
 		} else
 			udpContent = "";
-		System.out.print("Receiver : ");
+		System.out.printf("%d [Receiver] : ",System.nanoTime());
 		System.out.printf(msg + udpContent + "%n", args);
 	}
 }

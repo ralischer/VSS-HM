@@ -53,6 +53,10 @@ public class UDPManager {
 		socket.send(data);
 	}
 
+	public void sendMessage(String message) throws IOException {
+		sendMessage(message, -1);
+	}
+
 	/**
 	 * Listrting to the defined port in order to receive an UDP message
 	 * containing a string and an integer value

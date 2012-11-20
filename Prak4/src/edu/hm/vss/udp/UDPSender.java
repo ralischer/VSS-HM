@@ -1,7 +1,9 @@
 package edu.hm.vss.udp;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 
 import javax.xml.ws.handler.MessageContext;
 
@@ -30,16 +32,15 @@ public class UDPSender extends Thread {
 				UDPMessage udp = null;
 				udpManager.sendMessage(request);
 				udp = udpManager.receiveMessage();
-				if(udp==null){ // socket timeout
+				if (udp == null) { // socket timeout
 					output("Socket timeout, redo request", udp);
 					continue;
 				}
 				if (!response.equals(udp.message)) {
 					output("Illegal response", udp);
 					continue;
-				}
-				else{
-					output("received response ",udp);
+				} else {
+					output("received response ", udp);
 				}
 				udpManager.sendMessage(request);
 				i++;
@@ -48,6 +49,7 @@ public class UDPSender extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		udpManager.close();
 
 	}
 
@@ -57,7 +59,20 @@ public class UDPSender extends Thread {
 			udpContent = String.format(" \"%s\"", udp.message);
 		} else
 			udpContent = "";
-		System.out.printf("%d [Sender] : ",System.nanoTime());
+		System.out.printf("%d [Sender] : ", System.nanoTime());
 		System.out.printf(msg + udpContent + "%n", args);
+	}
+
+	public static void main(String[] args) throws SocketException,
+			UnknownHostException {
+		final int timeout = 20;
+		final int sendCount = 5;
+		
+		UDPManager manager = new UDPManager("localhost",
+				IPingPongConstants.SENDER_LISTENING_PORT,
+				IPingPongConstants.RECEIVER_LISTENING_PORT, timeout);
+		UDPSender sender = new UDPSender(IPingPongConstants.SENDER_MSG,
+				IPingPongConstants.RECEIVER_MSG, manager, sendCount);
+		sender.run();
 	}
 }

@@ -72,10 +72,11 @@ public class UDPManager {
 			ArrayList<byte[]> content = PayloadDatagramPackage
 					.getDatagramContent(packet);
 			return new UDPMessage(new String(content.get(1)),
-					(int) content.get(0)[0]);
+					(int) content.get(0)[0], packet.getAddress());
 		} catch (SocketTimeoutException ex) {
 			return null;
 		}
+
 	}
 
 	/**

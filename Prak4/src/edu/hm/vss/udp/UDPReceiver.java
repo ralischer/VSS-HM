@@ -1,6 +1,8 @@
 package edu.hm.vss.udp;
 
 import java.io.IOException;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 
 import edu.hm.vss.udp.dataStructure.UDPMessage;
 
@@ -28,7 +30,7 @@ public class UDPReceiver extends Thread {
 		while (!interrupted()) {
 			try {
 				UDPMessage udp = manager.receiveMessage();
-				if (udp == null) { //socket timeout
+				if (udp == null) { // socket timeout
 					continue;
 				}
 
@@ -61,7 +63,16 @@ public class UDPReceiver extends Thread {
 			udpContent = String.format("  \"%s\"", udp.message);
 		} else
 			udpContent = "";
-		System.out.printf("%d [Receiver] : ",System.nanoTime());
+		System.out.printf("%d [Receiver] : ", System.nanoTime());
 		System.out.printf(msg + udpContent + "%n", args);
+	}
+
+	public static void main(String[] args) throws IOException {
+		UDPManager manager = new UDPManager("localhost",
+				IPingPongConstants.RECEIVER_LISTENING_PORT,
+				IPingPongConstants.SENDER_LISTENING_PORT, 0);
+		UDPReceiver receiver = new UDPReceiver(IPingPongConstants.SENDER_MSG,
+				IPingPongConstants.RECEIVER_MSG, manager);
+		receiver.run();
 	}
 }

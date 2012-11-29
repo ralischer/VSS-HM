@@ -35,10 +35,11 @@ public class ForkAndSeatServer {
 		
 		for(int i = 0; i < forkAmount; i++) {
 			seats[i] = new SeatImplementation();
-			Seat seatStub = (Seat) UnicastRemoteObject.exportObject(forks[i],0);
+			Seat seatStub = (Seat) UnicastRemoteObject.exportObject(seats[i],0);
 			registry.rebind("seat"+i, seatStub);
 			seatStub.setTable(table);
 			table.registerNewSeat(seatStub);
+			new Thread(seats[i]).start();
 		}
 		
 		System.out.println("server running");

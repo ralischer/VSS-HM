@@ -13,4 +13,5 @@ public interface Seat extends Remote{
 	public Fork[] getForks() throws RemoteException;
 	public Collection<Philosopher> getWaitingPhilosophers() throws RemoteException;
 	public void setTable(Table t) throws RemoteException;
+	public int getRating() throws RemoteException;
 }

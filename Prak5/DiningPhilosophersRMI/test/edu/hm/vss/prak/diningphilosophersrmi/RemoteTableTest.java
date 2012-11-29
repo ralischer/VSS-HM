@@ -25,7 +25,7 @@ public class RemoteTableTest {
 	
 	@Before
 	public void before() throws RemoteException, NotBoundException {
-		TableMain.main();
+		TableMain.main("1099");
 		Registry registry = LocateRegistry.getRegistry(1099);
 		table = (Table)registry.lookup("table");
 		

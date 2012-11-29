@@ -30,6 +30,7 @@ public class TableTest {
 			t.registerNewFork(f1);
 			t.registerNewSeat(s0);
 			t.registerNewSeat(s1);
+			//System.out.println(t.usableSeats.toString());
 			assertEquals(2, t.usableSeats.size());
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -44,6 +45,7 @@ public class TableTest {
 		try {
 			t.registerNewFork(f0);
 			t.registerNewFork(f1);
+			System.out.println(t.usableSeats.toString());
 			assertEquals(t.usableSeats.toString(),2,t.usableSeats.size());
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -60,8 +62,10 @@ public class TableTest {
 			s0.setTable(t);
 			s1.setTable(t);
 			t.registerNewSeat(s0);
+			System.out.println(t.usableSeats.toString());
 			assertEquals(t.usableSeats.toString(),3,t.usableSeats.size());
 			t.registerNewSeat(s1);
+			System.out.println(t.usableSeats.toString());
 			assertEquals(t.usableSeats.toString(),4,t.usableSeats.size());
 		} catch (Exception e) {
 			e.printStackTrace();

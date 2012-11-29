@@ -59,6 +59,7 @@ public class SeatImplementation implements Seat, Runnable, Comparable<Seat>{
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
+		p.pause();
 		newPhilosophers++;
 		if(newPhilosophers > maxNewPhilosophers ){
 			if(table != null)
@@ -152,5 +153,10 @@ public class SeatImplementation implements Seat, Runnable, Comparable<Seat>{
 	@Override
 	public int hashCode() {
 		return instanceNumber;
+	}
+
+	@Override
+	public int getRating() throws RemoteException {
+		return computeRating(this);
 	}
 }

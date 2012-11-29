@@ -21,7 +21,7 @@ public class TableImplementation implements Table, Runnable{
 	List<Seat> usableSeats = new LinkedList<Seat>();
 	List<Fork> usedForks = new LinkedList<Fork>();
 	
-	TreeMap<Seat,Integer> suggestions = new TreeMap<Seat, Integer>();
+	TreeMap<Seat,Integer> suggestions = new TreeMap<Seat, Integer>(new SeatComparator());
 	
 	
 	@Override

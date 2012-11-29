@@ -1,5 +1,6 @@
 package edu.hm.vss.prak.diningphilosophersrmi.implementations;
 
+import java.io.Serializable;
 import java.rmi.RemoteException;
 
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Fork;
@@ -7,8 +8,12 @@ import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Philosopher;
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Seat;
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Table;
 
-public class PhilosopherImplementation implements Philosopher, Runnable{
+public class PhilosopherImplementation implements Philosopher, Runnable, Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7856989448973511203L;
 	private final int instanceNumber;
 	private static int instanceCounter = 0;
 	{
@@ -16,11 +21,11 @@ public class PhilosopherImplementation implements Philosopher, Runnable{
 	}
 	
 	private static final long GREEDY_TIME = 200;
-	private static final long EATING_TIME = 1000;
+	private static final long EATING_TIME = 900;
 	private boolean running = true;
 	private int eatings = 0;
 	
-	private final Object MONITOR = new Object();
+	private final String MONITOR = new String();
 	
 	private Table table;
 	private Seat seat;
@@ -46,16 +51,16 @@ public class PhilosopherImplementation implements Philosopher, Runnable{
 			}
 			try {
 				seat = table.getBestSeat();
-				log(this+" found "+seat);
+				log(this+" found "+seat.toString());
 				seat.waitForSeat(this);
-				synchronized(MONITOR) {
+				/*synchronized(MONITOR) {
 					try {
 						log(this+" waiting for seat...");
 						MONITOR.wait();
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-				}
+				}*/
 				Fork[] forks = seat.getForks();
 				synchronized(forks[0]){
 					synchronized(forks[1]) {
@@ -114,5 +119,16 @@ public class PhilosopherImplementation implements Philosopher, Runnable{
 	@Override
 	public String toString() {
 		return "Philosopher#"+instanceNumber;
+	}
+
+	@Override
+	public void pause() throws RemoteException {
+		synchronized(MONITOR){
+			try {
+				MONITOR.wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }

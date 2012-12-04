@@ -42,21 +42,25 @@ public class PhilosopherTest {
 	
 	@Test
 	public void testRunOnePhilosopher() throws Exception {
-		new Thread(philosophers[0]).start();
+		Thread t = new Thread(philosophers[0]);
+		t.start();
 		Thread.sleep(100);
 		philosophers[0].stop();
-		Thread.sleep(5000);
+		t.join();
 		assertEquals(1, philosophers[0].getEatings());
 	}
 	
 	@Test
 	public void testTwoPhilosophers() throws Exception {
-		new Thread(philosophers[0]).start();
-		new Thread(philosophers[1]).start();
+		Thread t0 = new Thread(philosophers[0]);
+		t0.start();
+		Thread t1 = new Thread(philosophers[1]);
+		t1.start();
 		Thread.sleep(100);
 		philosophers[0].stop();
 		philosophers[1].stop();
-		Thread.sleep(5000);
+		t0.join();
+		t1.join();
 		assertEquals(1, philosophers[0].getEatings());
 		assertEquals(1, philosophers[1].getEatings());
 		
@@ -64,17 +68,24 @@ public class PhilosopherTest {
 	
 	@Test
 	public void testFourPhilosophers() throws Exception {
-		new Thread(philosophers[0]).start();
-		new Thread(philosophers[1]).start();
+		Thread t0 = new Thread(philosophers[0]);
+		t0.start();
+		Thread t1 = new Thread(philosophers[1]);
+		t1.start();
 		Thread.sleep(100);
 		philosophers[0].stop();
 		philosophers[1].stop();
-		new Thread(philosophers[2]).start();
-		new Thread(philosophers[3]).start();
+		Thread t2 = new Thread(philosophers[2]);
+		t2.start();
+		Thread t3 = new Thread(philosophers[3]);
+		t3.start();
 		Thread.sleep(100);
 		philosophers[2].stop();
 		philosophers[3].stop();
-		Thread.sleep(5000);
+		t0.join();
+		t1.join();
+		t2.join();
+		t3.join();
 		assertEquals(1, philosophers[0].getEatings());
 		assertEquals(1, philosophers[1].getEatings());
 		assertEquals(1, philosophers[2].getEatings());
@@ -84,27 +95,35 @@ public class PhilosopherTest {
 	
 	@Test
 	public void testFivePhilosophers() throws Exception {
-		new Thread(philosophers[0]).start();
-		new Thread(philosophers[1]).start();
+		Thread t0 = new Thread(philosophers[0]);
+		t0.start();
+		Thread t1 = new Thread(philosophers[1]);
+		t1.start();
 		Thread.sleep(100);
 		philosophers[0].stop();
 		philosophers[1].stop();
-		new Thread(philosophers[2]).start();
-		new Thread(philosophers[3]).start();
+		Thread t2 = new Thread(philosophers[2]);
+		t2.start();
+		Thread t3 = new Thread(philosophers[3]);
+		t3.start();
 		Thread.sleep(100);
 		philosophers[2].stop();
 		philosophers[3].stop();
-		Thread.sleep(5000);
+		t0.join();
+		t1.join();
+		t2.join();
+		t3.join();
 		assertEquals(1, philosophers[0].getEatings());
 		assertEquals(1, philosophers[1].getEatings());
 		assertEquals(1, philosophers[2].getEatings());
 		assertEquals(1, philosophers[3].getEatings());
 		PhilosopherImplementation p = new PhilosopherImplementation();
 		p.setTable(t);
-		new Thread(p).start();
+		Thread t4 = new Thread(p);
+		t4.start();
 		Thread.sleep(100);
 		p.stop();
-		Thread.sleep(2000);
+		t4.join();
 		assertEquals(1, p.getEatings());
 	}
 	
@@ -114,6 +133,8 @@ public class PhilosopherTest {
 			PhilosopherImplementation p = new PhilosopherImplementation();
 			p.setTable(t);
 			new Thread(p).start();
+			Thread.sleep(100);
+			p.stop();
 		}
 		Thread.sleep(10000);
 	}

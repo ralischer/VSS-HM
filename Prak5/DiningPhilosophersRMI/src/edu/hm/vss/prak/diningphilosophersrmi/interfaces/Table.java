@@ -13,5 +13,5 @@ public interface Table extends Remote{
 	public void removeFork(Fork f) throws RemoteException;
 	public void findNewSeat(Philosopher p) throws RemoteException;
 	public void updateQueueSize(Seat s, int waitingPhilosophers) throws RemoteException;
-	
+	public void readyToSync(Seat s) throws RemoteException;
 }

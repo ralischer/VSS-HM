@@ -37,10 +37,11 @@ public class RemoteForkAndSeatServerTest {
 		assertEquals(3,table.getSeatAmount());
 		PhilosopherImplementation p = new PhilosopherImplementation();
 		p.setTable(table);
-		new Thread(p).start();
+		Thread t = new Thread(p);
+		t.start();
 		Thread.sleep(100);
 		p.stop();
-		Thread.sleep(3000);
+		t.join();
 		assertEquals(1,p.getEatings());
 		
 	}

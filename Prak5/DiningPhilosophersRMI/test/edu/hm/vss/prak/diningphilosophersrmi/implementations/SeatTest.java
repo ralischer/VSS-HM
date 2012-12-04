@@ -28,7 +28,7 @@ public class SeatTest {
 		assertEquals(-1,s1.compareTo(s0));
 	}
 	
-	@Test
+	//@Test
 	public void testComparabilityWithPhilosophers() throws RemoteException{
 		PhilosopherImplementation p = new PhilosopherImplementation();
 		PhilosopherImplementation p0 = new PhilosopherImplementation();

@@ -31,6 +31,7 @@ public class SeatImplementation implements Seat, Runnable, Comparable<Seat>{
 	
 	private int newPhilosophers = 0;
 	private int maxNewPhilosophers = 1;
+	private boolean sync = false;
 	
 	@Override
 	public void run() {
@@ -158,5 +159,10 @@ public class SeatImplementation implements Seat, Runnable, Comparable<Seat>{
 	@Override
 	public int getRating() throws RemoteException {
 		return computeRating(this);
+	}
+
+	@Override
+	public void pauseForSync() throws RemoteException {
+		sync  = true;
 	}
 }

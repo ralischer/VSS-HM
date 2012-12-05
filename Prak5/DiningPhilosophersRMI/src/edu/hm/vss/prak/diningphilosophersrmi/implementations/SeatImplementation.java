@@ -37,6 +37,10 @@ public class SeatImplementation implements Seat, Runnable, Comparable<Seat>{
 	public void run() {
 		while(running ) {
 			try {
+				while(sync) {
+					table.readyToSync(this);
+					MONITOR.wait();
+				}
 				waitingPhilosophers.take().seatAvailable(this);
 			} catch (RemoteException e) {
 				e.printStackTrace();
@@ -164,5 +168,13 @@ public class SeatImplementation implements Seat, Runnable, Comparable<Seat>{
 	@Override
 	public void pauseForSync() throws RemoteException {
 		sync  = true;
+	}
+
+	@Override
+	public void continueAfterSync() throws RemoteException {
+		sync = false;
+		synchronized (MONITOR) {
+			MONITOR.notify();
+		}
 	}
 }

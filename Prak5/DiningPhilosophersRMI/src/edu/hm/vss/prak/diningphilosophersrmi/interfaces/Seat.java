@@ -15,4 +15,5 @@ public interface Seat extends Remote{
 	public void setTable(Table t) throws RemoteException;
 	public int getRating() throws RemoteException;
 	public void pauseForSync() throws RemoteException;
+	public void continueAfterSync() throws RemoteException;
 }

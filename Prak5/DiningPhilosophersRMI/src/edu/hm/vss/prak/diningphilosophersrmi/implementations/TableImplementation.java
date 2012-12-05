@@ -2,6 +2,7 @@ package edu.hm.vss.prak.diningphilosophersrmi.implementations;
 
 import java.rmi.RemoteException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,6 +13,7 @@ import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Fork;
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Philosopher;
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Seat;
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Table;
+import edu.hm.vss.prak.diningphilosophersrmi.util.Pair;
 
 public class TableImplementation implements Table, Runnable{
 
@@ -23,6 +25,7 @@ public class TableImplementation implements Table, Runnable{
 	
 	TreeMap<Seat,Integer> suggestions = new TreeMap<Seat, Integer>(new SeatComparator());
 	
+	HashMap<Seat, Pair<Fork>> temp = new HashMap<Seat, Pair<Fork>>();
 	
 	@Override
 	public void run() {
@@ -62,6 +65,8 @@ public class TableImplementation implements Table, Runnable{
 			left.incrementUsageNumber();
 			right.incrementUsageNumber();
 			s.setForks(left, right);
+			Pair<Fork> pair = new Pair<Fork>(left,right);
+			temp.put(s, pair);
 			usableSeats.add(index+1, s);
 			return;
 		}
@@ -171,6 +176,37 @@ public class TableImplementation implements Table, Runnable{
 			}
 			suggestions.put(s, waitingPhilosophers);
 		}
+		
+	}
+
+	@Override
+	public void readyToSync(Seat s) throws RemoteException {
+		
+	}
+
+	@Override
+	public void registerNewSeatAndFork(Seat s, Fork f) throws RemoteException {
+		final Seat firstSeat = usableSeats.get(0);
+		final Seat lastSeat = usableSeats.get(usableSeats.size()-1);
+		firstSeat.pauseForSync();
+		lastSeat.pauseForSync();
+		Thread t = new Thread() {
+			boolean firstReadyToSync = false;
+			boolean secondReadyToSync = false;
+			public void run() {
+				
+			}
+		};
+		t.start();
+		t.join();
+		lastSeat.setLast(false);
+		Fork lastFork = lastSeat.getForks()[1];
+		
+		
+	}
+
+	@Override
+	public void removeSeatAndFork(Seat s, Fork f) throws RemoteException {
 		
 	}
 	

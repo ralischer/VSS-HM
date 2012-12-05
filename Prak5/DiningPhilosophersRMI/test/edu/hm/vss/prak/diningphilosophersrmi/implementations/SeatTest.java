@@ -28,6 +28,17 @@ public class SeatTest {
 		assertEquals(-1,s1.compareTo(s0));
 	}
 	
+	@Test
+	public void testIsLast() throws Exception {
+		Fork f0 = new ForkImplementation();
+		Fork f1 = new ForkImplementation();
+		SeatImplementation s0 = new SeatImplementation();
+		s0.setForks(f0, f1);
+		assertEquals(f0, s0.getLeftFork());
+		s0.setLast(true);
+		assertEquals(f1, s0.getLeftFork());
+	}
+	
 	//@Test
 	public void testComparabilityWithPhilosophers() throws RemoteException{
 		PhilosopherImplementation p = new PhilosopherImplementation();

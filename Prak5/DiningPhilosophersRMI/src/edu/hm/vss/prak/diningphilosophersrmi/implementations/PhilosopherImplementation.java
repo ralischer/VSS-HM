@@ -61,9 +61,9 @@ public class PhilosopherImplementation implements Philosopher, Runnable, Seriali
 						e.printStackTrace();
 					}
 				}*/
-				Fork[] forks = seat.getForks();
-				synchronized(forks[0]){
-					synchronized(forks[1]) {
+				//Fork[] forks = seat.getForks();
+				synchronized(seat.getLeftFork()){
+					synchronized(seat.getRightFork()) {
 						log(this+" eating...");
 						try {
 							Thread.sleep(EATING_TIME);

@@ -11,12 +11,13 @@ import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Philosopher;
 public class PhilosopherMain {
 
 	public static void main(String... args) throws RemoteException {
-		LocateRegistry.createRegistry(1100);
+		LocateRegistry.createRegistry(Integer.parseInt(args[0]));
 		
 		PhilosopherImplementation pi = new PhilosopherImplementation();
 		Philosopher philosopherStub = (Philosopher) UnicastRemoteObject.exportObject(pi,0);
-		
-		Registry registry = LocateRegistry.getRegistry(1100);
+		Thread philosopherThread = new Thread(pi);
+		philosopherThread.start();
+		Registry registry = LocateRegistry.getRegistry(Integer.parseInt(args[0]));
 		registry.rebind("philosopher", philosopherStub);
 		System.out.println("philosopher running");
 	}

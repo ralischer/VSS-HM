@@ -16,4 +16,7 @@ public interface Seat extends Remote{
 	public int getRating() throws RemoteException;
 	public void pauseForSync() throws RemoteException;
 	public void continueAfterSync() throws RemoteException;
+	public void setLast(boolean isLast) throws RemoteException;
+	public Fork getLeftFork() throws RemoteException;
+	public Fork getRightFork() throws RemoteException;
 }

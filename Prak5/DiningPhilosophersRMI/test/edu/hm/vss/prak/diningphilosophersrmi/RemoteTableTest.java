@@ -31,7 +31,7 @@ public class RemoteTableTest {
 		
 	}
 	
-	@Test
+	//@Test
 	public void testTable() {
 		table = new TableImplementation();
 		Fork f0 = new ForkImplementation();
@@ -46,6 +46,39 @@ public class RemoteTableTest {
 			table.registerNewSeat(s0);
 			table.registerNewSeat(s1);
 			assertEquals(2, table.getSeatAmount());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getClass().getSimpleName());
+		}
+	}
+	
+	@Test
+	public void testRegisterNewForkAndSeat() {
+		table = new TableImplementation();
+		Fork f0 = new ForkImplementation();
+		Fork f1 = new ForkImplementation();
+		SeatImplementation s0 = new SeatImplementation();
+		SeatImplementation s1 = new SeatImplementation();
+		Fork newFork = new ForkImplementation();
+		SeatImplementation newSeat = new SeatImplementation();
+		try {
+			s0.setTable(table);
+			s1.setTable(table);
+			newSeat.setTable(table);
+			Thread t0 = new Thread(s0);
+			Thread t1 = new Thread(s1);
+			Thread t2 = new Thread(newSeat);
+			t0.start();
+			t1.start();
+			t2.start();
+			table.registerNewFork(f0);
+			table.registerNewFork(f1);
+			table.registerNewSeat(s0);
+			table.registerNewSeat(s1);
+			assertEquals(2, table.getSeatAmount());
+			table.registerNewSeatAndFork(newSeat, newFork);
+			Thread.sleep(5000);
+			assertEquals(3, table.getSeatAmount());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getClass().getSimpleName());

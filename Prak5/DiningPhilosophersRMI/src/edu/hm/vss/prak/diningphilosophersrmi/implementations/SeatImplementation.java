@@ -4,13 +4,14 @@ import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Fork;
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Philosopher;
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Seat;
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Table;
 
-public class SeatImplementation implements Seat, Runnable, Comparable<Seat>{
+public class SeatImplementation /*extends Thread*/ implements Seat, Runnable, Comparable<Seat>{
 	
 	private final int instanceNumber;
 	private static int instanceCounter = 0;
@@ -32,16 +33,28 @@ public class SeatImplementation implements Seat, Runnable, Comparable<Seat>{
 	private int newPhilosophers = 0;
 	private int maxNewPhilosophers = 1;
 	private boolean sync = false;
+	private boolean isLast = false;
 	
 	@Override
 	public void run() {
 		while(running ) {
 			try {
+				//System.out.println(this+" blubb");
 				while(sync) {
+					//System.out.println(this+" ready to sync going to tell the table");
 					table.readyToSync(this);
-					MONITOR.wait();
+					synchronized (MONITOR) {
+						MONITOR.wait();
+					}
 				}
-				waitingPhilosophers.take().seatAvailable(this);
+				Philosopher p = waitingPhilosophers.poll(1000, TimeUnit.MILLISECONDS);
+				if(p != null) {
+					System.out.println("philosopher ready");
+					p.seatAvailable(this);
+				} else {
+					continue;
+				}
+				//waitingPhilosophers.take().seatAvailable(this);
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			} catch (InterruptedException e) {
@@ -49,6 +62,7 @@ public class SeatImplementation implements Seat, Runnable, Comparable<Seat>{
 			}
 			synchronized (MONITOR) {
 				try {
+					System.out.println(this+" waiting for philosopher ready...");
 					MONITOR.wait();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
@@ -103,6 +117,24 @@ public class SeatImplementation implements Seat, Runnable, Comparable<Seat>{
 	public Fork[] getForks() throws RemoteException {
 		//TODO: maybe hold own array
 		return forks;//new Fork[]{leftFork, rightFork};
+	}
+	
+	@Override
+	public Fork getLeftFork() throws RemoteException {
+		if(isLast) {
+			return rightFork;
+		} else {
+			return leftFork;
+		}
+	}	
+	
+	@Override
+	public Fork getRightFork() throws RemoteException {
+		if(isLast) {
+			return leftFork;
+		} else {
+			return rightFork;
+		}
 	}
 
 	@Override
@@ -167,14 +199,25 @@ public class SeatImplementation implements Seat, Runnable, Comparable<Seat>{
 
 	@Override
 	public void pauseForSync() throws RemoteException {
+		System.out.println(this+" waiting for sync...");
 		sync  = true;
+		//interrupt();
+		synchronized (MONITOR) {
+			MONITOR.notify();
+		}
 	}
 
 	@Override
 	public void continueAfterSync() throws RemoteException {
+		System.out.println(this+" continueing...");
 		sync = false;
 		synchronized (MONITOR) {
-			MONITOR.notify();
+			MONITOR.notifyAll();
 		}
+	}
+
+	@Override
+	public void setLast(boolean isLast) throws RemoteException {
+		this.isLast = isLast;		
 	}
 }

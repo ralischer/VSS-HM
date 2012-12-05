@@ -19,7 +19,7 @@ public class RemotePhilosopherTest {
 	
 	@Before
 	public void before() throws RemoteException, NotBoundException {
-		PhilosopherMain.main();
+		PhilosopherMain.main("1100");
 		
 		Registry registry = LocateRegistry.getRegistry(1100);
 		philosopher = (Philosopher) registry.lookup("philosopher");

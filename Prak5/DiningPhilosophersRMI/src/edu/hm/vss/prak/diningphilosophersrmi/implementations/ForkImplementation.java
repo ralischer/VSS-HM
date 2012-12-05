@@ -2,11 +2,16 @@ package edu.hm.vss.prak.diningphilosophersrmi.implementations;
 
 import java.io.Serializable;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Fork;
 
-public class ForkImplementation implements Fork, Serializable{
+public class ForkImplementation extends UnicastRemoteObject implements Fork, Serializable{
 	
+	public ForkImplementation() throws RemoteException {
+		super();
+	}
+
 	/**
 	 * 
 	 */

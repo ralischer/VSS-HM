@@ -53,14 +53,16 @@ public class PhilosopherImplementation implements Philosopher, Runnable, Seriali
 				seat = table.getBestSeat();
 				log(this+" found "+seat.toString());
 				seat.waitForSeat(this);
-				/*synchronized(MONITOR) {
+				/*
+				synchronized(MONITOR) {
 					try {
 						log(this+" waiting for seat...");
 						MONITOR.wait();
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-				}*/
+				}
+				*/
 				//Fork[] forks = seat.getForks();
 				synchronized(seat.getLeftFork()){
 					synchronized(seat.getRightFork()) {
@@ -74,6 +76,7 @@ public class PhilosopherImplementation implements Philosopher, Runnable, Seriali
 					}
 				}
 				seat.leaveSeat();
+				seatAvailable = false;
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
@@ -92,12 +95,15 @@ public class PhilosopherImplementation implements Philosopher, Runnable, Seriali
 			//old seat is no longer available yet
 			seat = s;
 		}
+		seatAvailable = true;
 		synchronized (MONITOR) {
 			MONITOR.notify();
 			log(this+" seat available");
 		}
 	}
 
+	private boolean seatAvailable = false;
+	
 	@Override
 	public void setTable(Table t) throws RemoteException {
 		this.table = t;
@@ -123,9 +129,12 @@ public class PhilosopherImplementation implements Philosopher, Runnable, Seriali
 
 	@Override
 	public void pause() throws RemoteException {
+		if(seatAvailable) {
+			seatAvailable = false;
+			return;
+		}
 		synchronized(MONITOR){
 			try {
-				log(this+" going to wait until seat is ready");
 				MONITOR.wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();

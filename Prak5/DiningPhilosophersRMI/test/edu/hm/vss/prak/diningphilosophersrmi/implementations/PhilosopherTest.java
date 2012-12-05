@@ -72,14 +72,14 @@ public class PhilosopherTest {
 		t0.start();
 		Thread t1 = new Thread(philosophers[1]);
 		t1.start();
-		Thread.sleep(100);
+		Thread.sleep(200);
 		philosophers[0].stop();
 		philosophers[1].stop();
 		Thread t2 = new Thread(philosophers[2]);
 		t2.start();
 		Thread t3 = new Thread(philosophers[3]);
 		t3.start();
-		Thread.sleep(100);
+		Thread.sleep(200);
 		philosophers[2].stop();
 		philosophers[3].stop();
 		t0.join();

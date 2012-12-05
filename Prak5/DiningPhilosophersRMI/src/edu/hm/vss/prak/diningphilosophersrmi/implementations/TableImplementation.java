@@ -176,7 +176,7 @@ public class TableImplementation implements Table, Runnable {
 	@Override
 	public void updateQueueSize(Seat s, int waitingPhilosophers)
 			throws RemoteException {
-		System.err.println("updateing suggestions");
+		System.err.println("updating suggestions");
 		synchronized (suggestions) {
 			Iterator<Seat> i = suggestions.keySet().iterator();
 			while (i.hasNext()) {
@@ -245,9 +245,27 @@ public class TableImplementation implements Table, Runnable {
 	@Override
 	public void registerNewSeatAndFork(Seat s, Fork f) throws RemoteException {
 		// TODO: sync nur wenn ein sync abgeschlossen ist ... :-)
+		if(usableSeats.isEmpty()) {
+			if(unusedForks.isEmpty()) {
+				unusedForks.add(f);
+				unusedSeats.add(s);
+			} else {
+				Seat firstSeat = unusedSeats.remove(0);
+				Fork firstFork = unusedForks.remove(0);
+				firstSeat.setForks(f, firstFork);
+				s.setForks(firstFork, f);
+				s.setLast(true);
+				usableSeats.add(firstSeat);
+				usableSeats.add(s);
+				firstSeat.continueAfterSync();
+				s.continueAfterSync();
+			}
+			return;
+		}
 		while (syncing) {
 			synchronized (SYNC_MONITOR) {
 				try {
+					System.out.println("waiting to sync complete...");
 					SYNC_MONITOR.wait();
 				} catch (InterruptedException e) {
 					e.printStackTrace();

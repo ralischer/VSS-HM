@@ -1,6 +1,8 @@
 package edu.hm.vss.prak.diningphilosophersrmi.implementations;
 
+import java.io.Serializable;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Collection;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -11,8 +13,16 @@ import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Philosopher;
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Seat;
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Table;
 
-public class SeatImplementation /*extends Thread*/ implements Seat, Runnable, Comparable<Seat>{
+public class SeatImplementation extends UnicastRemoteObject/*extends Thread*/ implements Seat, Runnable, Comparable<Seat>, Serializable{
 	
+	public SeatImplementation() throws RemoteException {
+		super();
+	}
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5639426373498801933L;
 	private final int instanceNumber;
 	private static int instanceCounter = 0;
 	{
@@ -27,7 +37,7 @@ public class SeatImplementation /*extends Thread*/ implements Seat, Runnable, Co
 	
 	private Table table;
 	
-	private final Object MONITOR = new Object();
+	private final String MONITOR = new String();
 	private boolean running = true;
 	
 	private int newPhilosophers = 0;
@@ -41,7 +51,7 @@ public class SeatImplementation /*extends Thread*/ implements Seat, Runnable, Co
 			try {
 				//System.out.println(this+" blubb");
 				while(sync) {
-					//System.out.println(this+" ready to sync going to tell the table");
+					System.out.println(this+" ready to sync going to tell the table");
 					table.readyToSync(this);
 					synchronized (MONITOR) {
 						MONITOR.wait();
@@ -72,11 +82,22 @@ public class SeatImplementation /*extends Thread*/ implements Seat, Runnable, Co
 	}
 
 	@Override
-	public void waitForSeat(Philosopher p) throws RemoteException {
+	public void waitForSeat(final Philosopher p) throws RemoteException {
+		Thread waitingThread = new Thread() {
+			public void run() {
+				try {
+					p.pause();
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		waitingThread.start();
 		//p.pause();
 		//System.out.println(this+"adding philosopher to queue");
 		try {
 			waitingPhilosophers.put(p);
+			waitingThread.join();
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}

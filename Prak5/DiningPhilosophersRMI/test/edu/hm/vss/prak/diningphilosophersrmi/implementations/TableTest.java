@@ -17,7 +17,7 @@ public class TableTest {
 
 	
 	@Before
-	public void testTable() {
+	public void testTable() throws RemoteException {
 		t = new TableImplementation();
 		Fork f0 = new ForkImplementation();
 		Fork f1 = new ForkImplementation();
@@ -39,7 +39,7 @@ public class TableTest {
 	}
 	
 	@Test
-	public void testInsertNewForks() {
+	public void testInsertNewForks() throws RemoteException {
 		Fork f0 = new ForkImplementation();
 		Fork f1 = new ForkImplementation();
 		try {
@@ -54,7 +54,7 @@ public class TableTest {
 	}
 	
 	@Test
-	public void testInsertNewSeat() {
+	public void testInsertNewSeat() throws RemoteException {
 		testInsertNewForks();
 		Seat s0 = new SeatImplementation();	
 		Seat s1 = new SeatImplementation();		
@@ -74,7 +74,7 @@ public class TableTest {
 	}
 	
 	@Test
-	public void testInsertSeatsFirst() {
+	public void testInsertSeatsFirst() throws RemoteException {
 		TableImplementation t = new TableImplementation();
 		Fork f0 = new ForkImplementation();
 		Fork f1 = new ForkImplementation();
@@ -95,7 +95,7 @@ public class TableTest {
 	}
 	
 	@Test
-	public void testInsert() {
+	public void testInsert() throws RemoteException {
 		Fork f0 = new ForkImplementation();
 		Fork f1 = new ForkImplementation();
 		Seat s0 = new SeatImplementation();

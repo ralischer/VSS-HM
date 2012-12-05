@@ -53,7 +53,7 @@ public class DiningPhilosopherRMI {
 				String port = br.readLine();
 				table = (Table) Naming.lookup("//"+host+":"+port+"/table");//LocateRegistry.getRegistry(host,Integer.parseInt(port)).lookup("table");
 				System.out.println("table == null ? " + (table == null));
-			}
+			} 
 		}
 		br.close();
 		System.exit(0);

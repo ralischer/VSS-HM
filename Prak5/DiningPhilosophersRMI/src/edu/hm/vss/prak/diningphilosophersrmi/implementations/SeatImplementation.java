@@ -73,22 +73,21 @@ public class SeatImplementation /*extends Thread*/ implements Seat, Runnable, Co
 
 	@Override
 	public void waitForSeat(Philosopher p) throws RemoteException {
-		p.pause();
+		//p.pause();
+		//System.out.println(this+"adding philosopher to queue");
 		try {
 			waitingPhilosophers.put(p);
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
+		//TODO in eigenen Thread auslagern ...
+		/*
 		newPhilosophers++;
 		if(newPhilosophers > maxNewPhilosophers ){
 			if(table != null)
 				table.updateQueueSize(this, waitingPhilosophers.size());
 		}
-//		try {
-//			waitingPhilosophers.take().seatAvailable(this);
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
+		*/
 	}
 
 	@Override

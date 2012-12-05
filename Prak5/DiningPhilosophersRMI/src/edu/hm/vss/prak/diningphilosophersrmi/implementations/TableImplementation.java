@@ -40,6 +40,7 @@ public class TableImplementation implements Table, Runnable {
 
 	@Override
 	public Seat getBestSeat() throws RemoteException {
+		System.out.println("get best seat requested");
 		synchronized (suggestions) {
 			return suggestions.firstKey();
 		}

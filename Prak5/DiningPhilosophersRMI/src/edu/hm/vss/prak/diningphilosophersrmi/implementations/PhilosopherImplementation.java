@@ -125,6 +125,7 @@ public class PhilosopherImplementation implements Philosopher, Runnable, Seriali
 	public void pause() throws RemoteException {
 		synchronized(MONITOR){
 			try {
+				log(this+" going to wait until seat is ready");
 				MONITOR.wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();

@@ -30,6 +30,7 @@ public class ForkAndSeatServer {
 			forks[i] = new ForkImplementation();
 			Fork forkStub = (Fork) UnicastRemoteObject.exportObject(forks[i],0);
 			registry.rebind("fork"+i, forkStub);
+			System.out.println("table seats " + table.getSeatAmount());
 			table.registerNewFork(forkStub);
 		}
 		

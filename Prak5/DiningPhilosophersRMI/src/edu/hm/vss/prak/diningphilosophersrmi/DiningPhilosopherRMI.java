@@ -3,6 +3,7 @@ package edu.hm.vss.prak.diningphilosophersrmi;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.rmi.Naming;
 import java.rmi.registry.LocateRegistry;
 
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Philosopher;
@@ -50,7 +51,8 @@ public class DiningPhilosopherRMI {
 				System.out.print("Which Port? ");
 				System.out.flush();
 				String port = br.readLine();
-				table = (Table) LocateRegistry.getRegistry(host,Integer.parseInt(port)).lookup("table");
+				table = (Table) Naming.lookup("//"+host+":"+port+"/table");//LocateRegistry.getRegistry(host,Integer.parseInt(port)).lookup("table");
+				System.out.println("table == null ? " + (table == null));
 			}
 		}
 		br.close();

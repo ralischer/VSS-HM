@@ -14,9 +14,9 @@ public class SeatMain {
 		LocateRegistry.createRegistry(10099);
 		
 		SeatImplementation seat = new SeatImplementation();
-		Seat seatStub = (Seat) UnicastRemoteObject.exportObject(seat,0);
+		//Seat seatStub = (Seat) UnicastRemoteObject.exportObject(seat,0);
 		Registry registry = LocateRegistry.getRegistry(10099);
-		registry.rebind("seat", seatStub);
+		registry.rebind("seat", seat);
 		System.out.println("seat running ..");
 	}
 	

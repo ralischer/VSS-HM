@@ -185,6 +185,7 @@ public class TableImplementation implements Table, Runnable {
 					i.remove();
 			}
 			suggestions.put(s, waitingPhilosophers);
+			System.err.println("new best "+suggestions.firstKey());
 		}
 
 	}

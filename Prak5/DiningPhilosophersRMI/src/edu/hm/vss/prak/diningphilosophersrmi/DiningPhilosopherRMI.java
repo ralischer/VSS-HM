@@ -27,6 +27,21 @@ public class DiningPhilosopherRMI {
 				System.out.print("Which port? ");
 				System.out.flush();
 				port = br.readLine();
+				String viewerAvailable;
+				System.out.print("Viewer available? (J/n)");
+				System.out.flush();
+				viewerAvailable = br.readLine();
+				String viewerHost;
+				String viewerPort;
+				if(viewerAvailable.isEmpty() || viewerAvailable.toUpperCase().equals("J")) {
+					System.out.print("Viewer Host: ");
+					System.out.flush();
+					viewerHost = br.readLine();
+					System.out.print("Viewer port: ");
+					System.out.flush();
+					viewerPort = br.readLine();
+					PhilosopherMain.main(port,viewerHost,viewerPort);
+				} else
 				PhilosopherMain.main(port);
 				Philosopher p = (Philosopher) LocateRegistry.getRegistry(Integer.parseInt(port)).lookup("philosopher");
 				p.setTable(table);

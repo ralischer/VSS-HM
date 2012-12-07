@@ -53,13 +53,8 @@ public class TableImplementation implements Table, Runnable {
 
 	@Override
 	public void findNewSeat(Philosopher p) throws RemoteException {
-		// TODO: getBestSeat().waitForSeat(p);
-	}
-
-	@Override
-	public void updateQueueSize(Seat s, int waitingPhilosophers)
-			throws RemoteException {
-		// TODO: remove...
+		//just give them the first seat....
+		getBestSeat("null").waitForSeat(p);
 	}
 
 	@Override
@@ -221,12 +216,9 @@ public class TableImplementation implements Table, Runnable {
 	private boolean syncing;
 	private HashMap<String, List<Seat>> sug = new HashMap<String, List<Seat>>();
 
-	// TODO: wenn ein schnell zwei seats erstellt werden könnten probleme
-	// auftreten ...
 	@Override
 	public void registerNewSeatAndFork(Seat s, Fork f, String host)
 			throws RemoteException {
-		// TODO: sync nur wenn ein sync abgeschlossen ist ... :-)
 		System.out.println("registering new seat and fork from host: " + host);
 		synchronized (usableSeats) {
 			if (usableSeats.isEmpty()) {
@@ -288,9 +280,6 @@ public class TableImplementation implements Table, Runnable {
 			if(hostList != null) {
 				lastSeat = hostList.get(hostList.size()-1);
 				firstSeat = lastSeat.getNextSeat();
-				//original
-				//firstSeat = hostList.get(hostList.size()-1);
-				//lastSeat = firstSeat.getNextSeat();
 			}
 			
 			Job job = new Job(JobType.ADD, firstSeat, lastSeat, s, f, host);
@@ -323,14 +312,11 @@ public class TableImplementation implements Table, Runnable {
 		}
 		System.out.println("removing seat and fork");
 		synchronized (SYNC_MONITOR) {
-			// TODO: implement this..
 			s.pauseForSync();
 			s.getNextSeat().pauseForSync();
 			s.getPrevious().pauseForSync();
 			Job job = new Job(JobType.REMOVE, s.getPrevious(), s.getNextSeat(),
 					s, f, host);
-			// Collection<Philosopher> waitingPhilosophers =
-			// s.getWaitingPhilosophers();
 			jobs.add(job);
 			link.put(s.getPrevious(), job);
 			link.put(s.getNextSeat(), job);

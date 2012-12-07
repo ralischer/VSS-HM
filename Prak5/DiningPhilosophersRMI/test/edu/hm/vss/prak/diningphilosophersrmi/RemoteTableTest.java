@@ -41,8 +41,8 @@ public class RemoteTableTest {
 		try {
 			s0.setTable(table);
 			s1.setTable(table);
-			table.registerNewSeatAndFork(s0, f0);
-			table.registerNewSeatAndFork(s1, f1);
+			table.registerNewSeatAndFork(s0, f0, "localhost");
+			table.registerNewSeatAndFork(s1, f1, "localhost");
 			//table.registerNewFork(f0);
 			//table.registerNewFork(f1);
 			//table.registerNewSeat(s0);
@@ -73,14 +73,14 @@ public class RemoteTableTest {
 			t0.start();
 			t1.start();
 			t2.start();
-			table.registerNewSeatAndFork(s0, f0);
-			table.registerNewSeatAndFork(s1, f1);
+			table.registerNewSeatAndFork(s0, f0, "localhost");
+			table.registerNewSeatAndFork(s1, f1,"localhost");
 			//table.registerNewFork(f0);
 			//table.registerNewFork(f1);
 			//table.registerNewSeat(s0);
 			//table.registerNewSeat(s1);
 			assertEquals(2, table.getSeatAmount());
-			table.registerNewSeatAndFork(newSeat, newFork);
+			table.registerNewSeatAndFork(newSeat, newFork, "localhost");
 			Thread.sleep(5000);
 			assertEquals(3, table.getSeatAmount());
 		} catch (Exception e) {

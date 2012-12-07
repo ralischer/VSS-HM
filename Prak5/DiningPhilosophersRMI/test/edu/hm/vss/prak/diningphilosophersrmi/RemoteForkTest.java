@@ -23,13 +23,4 @@ public class RemoteForkTest {
 		assertNotNull(fork);
 	}
 
-	@Test
-	public void testMain() throws RemoteException {
-		assertFalse(fork.isShared());
-		fork.incrementUsageNumber();
-		assertFalse(fork.isShared());
-		fork.incrementUsageNumber();
-		assertTrue(fork.isShared());
-	}
-
 }

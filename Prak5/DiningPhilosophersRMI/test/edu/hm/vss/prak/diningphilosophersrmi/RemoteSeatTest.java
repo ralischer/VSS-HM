@@ -28,15 +28,6 @@ public class RemoteSeatTest {
 		
 		Registry registry = LocateRegistry.getRegistry(10099);
 		seat = (Seat) registry.lookup("seat");
-		f0.incrementUsageNumber();
-		f0.incrementUsageNumber();
-		f1.incrementUsageNumber();
 		seat.setForks(f0, f1);
-		assertNotNull(seat.getForks());
-	}
-	
-	@Test
-	public void testToString() throws RemoteException {
-		assertEquals(2, seat.getForks().length);
 	}
 }

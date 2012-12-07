@@ -40,8 +40,6 @@ public class SeatImplementation extends UnicastRemoteObject implements Seat, Run
 	private final String MONITOR = new String();
 	private boolean running = true;
 	
-	private int newPhilosophers = 0;
-	private int maxNewPhilosophers = 1;
 	private boolean sync = false;
 	private boolean isLast = false;
 	
@@ -49,7 +47,6 @@ public class SeatImplementation extends UnicastRemoteObject implements Seat, Run
 	public void run() {
 		while(running ) {
 			try {
-				//System.out.println(this+" blubb");
 				while(sync) {
 					System.out.println(this+" ready to sync going to tell the table");
 					table.readyToSync(this);
@@ -100,16 +97,7 @@ public class SeatImplementation extends UnicastRemoteObject implements Seat, Run
 			waitingThread.join();
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
-		}
-		//TODO in eigenen Thread auslagern ...
-		
-		newPhilosophers++;
-		if(newPhilosophers > maxNewPhilosophers ){
-			if(table != null)
-				table.updateQueueSize(this, waitingPhilosophers.size());
-			newPhilosophers = 0;
-		}
-		
+		}		
 	}
 
 	@Override
@@ -123,8 +111,6 @@ public class SeatImplementation extends UnicastRemoteObject implements Seat, Run
 	
 	@Override
 	public void leaveSeat() throws RemoteException {
-		if(count++ % 5 == 0)
-			table.updateQueueSize(this, waitingPhilosophers.size());
 		synchronized(MONITOR) {
 			MONITOR.notify();
 		}
@@ -134,8 +120,6 @@ public class SeatImplementation extends UnicastRemoteObject implements Seat, Run
 	public void setForks(Fork left, Fork right) throws RemoteException {
 		this.leftFork = left;
 		this.rightFork = right;
-		if(table != null)
-			table.updateQueueSize(this, waitingPhilosophers.size());
 	}
 	
 	@Override
@@ -177,7 +161,6 @@ public class SeatImplementation extends UnicastRemoteObject implements Seat, Run
 		try {
 			rating += s.getLeftFork().isShared() ? 0 : 1;
 			rating += s.getRightFork().isShared() ? 0 : 1;
-			//TODO: test this
 			rating -= ((SeatImplementation)s).waitingPhilosophers.size()/rating;
 		} catch (RemoteException e) {
 			e.printStackTrace();
@@ -218,9 +201,7 @@ public class SeatImplementation extends UnicastRemoteObject implements Seat, Run
 
 	@Override
 	public void pauseForSync() throws RemoteException {
-		System.out.println(this+" waiting for sync...");
 		sync  = true;
-		//interrupt();
 		synchronized (MONITOR) {
 			MONITOR.notify();
 		}
@@ -228,7 +209,6 @@ public class SeatImplementation extends UnicastRemoteObject implements Seat, Run
 
 	@Override
 	public void continueAfterSync() throws RemoteException {
-		System.out.println(this+" continueing...");
 		sync = false;
 		synchronized (MONITOR) {
 			MONITOR.notifyAll();

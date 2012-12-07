@@ -1,22 +1,19 @@
 package edu.hm.vss.prak.diningphilosophersrmi.implementations;
 
 import java.rmi.RemoteException;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Fork;
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Philosopher;
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Seat;
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Table;
 import edu.hm.vss.prak.diningphilosophersrmi.util.Job;
-import edu.hm.vss.prak.diningphilosophersrmi.util.Pair;
+import edu.hm.vss.prak.diningphilosophersrmi.util.JobType;
 
 public class TableImplementation implements Table, Runnable {
 
@@ -27,11 +24,6 @@ public class TableImplementation implements Table, Runnable {
 	List<Seat> usableSeats = new LinkedList<Seat>();
 	List<Fork> usedForks = new LinkedList<Fork>();
 
-	TreeMap<Seat, Integer> suggestions = new TreeMap<Seat, Integer>(
-			new SeatComparator());
-
-	HashMap<Seat, Pair<Fork>> temp = new HashMap<Seat, Pair<Fork>>();
-
 	@Override
 	public void run() {
 		// TODO heart-beat for clients...
@@ -39,155 +31,35 @@ public class TableImplementation implements Table, Runnable {
 	}
 
 	@Override
-	public Seat getBestSeat() throws RemoteException {
-		System.out.println("get best seat requested");
-		synchronized (suggestions) {
-			return suggestions.firstKey();
+	public Seat getBestSeat(String host) throws RemoteException {
+		synchronized (sug) {
+			List<Seat> seats = sug.get(host);
+			if (seats == null) {
+				synchronized (usableSeats) {
+					return usableSeats.get(0);
+				}
+			} else {
+				return seats.get(0);
+			}
 		}
 	}
 
 	@Override
 	public int getSeatAmount() throws RemoteException {
-		return usableSeats.size();
-	}
-
-	@Override
-	public void registerNewSeat(Seat s) throws RemoteException {
-		Seat seatWithUnsharedFork = null;
-		Seat nextSeat = null;
-		int index = 0;
-		for (int i = 0; i < usableSeats.size(); i++) {
-			Seat currentSeat = usableSeats.get(i);
-			if (!currentSeat.getForks()[1].isShared()) {
-				seatWithUnsharedFork = currentSeat;
-				index = i;
-				break;
-			}
-		}
-		if (seatWithUnsharedFork != null) {
-			nextSeat = index == usableSeats.size() - 1 ? usableSeats.get(0)
-					: usableSeats.get(index + 1);
-			Fork left = seatWithUnsharedFork.getForks()[1];
-			Fork right = nextSeat.getForks()[0];
-			left.incrementUsageNumber();
-			right.incrementUsageNumber();
-			s.setForks(left, right);
-			Pair<Fork> pair = new Pair<Fork>(left, right);
-			temp.put(s, pair);
-			usableSeats.add(index + 1, s);
-			return;
-		}
-
-		if (unusedForks.size() > 1 && usableSeats.isEmpty()) {
-			Fork left = unusedForks.remove(0);
-			Fork right = unusedForks.remove(0);
-			left.incrementUsageNumber();
-			right.incrementUsageNumber();
-			s.setForks(left, right);
-			usableSeats.add(s);
-			if (!unusedSeats.isEmpty())
-				registerNewSeat(unusedSeats.remove(0));
-		}
-		// we are only adding new seats if there are forks available
-		if (unusedForks.size() > 0 && !usableSeats.isEmpty()) {
-			// if unused forks is greater than zero all current seats use 2
-			// forks
-			Fork f = unusedForks.remove(0);
-			Fork lastFork = usableSeats.get(0).getForks()[1];
-			lastFork.incrementUsageNumber();
-			f.incrementUsageNumber();
-			s.setForks(lastFork, f);
-			usableSeats.add(s);
-		} else
-			unusedSeats.add(s);
-	}
-
-	@Override
-	public void removeSeat(Seat s) throws RemoteException {
-		// TODO implement this
-		if (unusedSeats.contains(s)) {
-			unusedSeats.remove(s);
-			return;
-		}
-
-	}
-
-	@Override
-	public void registerNewFork(Fork f) throws RemoteException {
-		Seat seat = null;
-		for (Seat s : usableSeats) {
-			if (s.getForks()[0].isShared() || s.getForks()[1].isShared()) {
-				seat = s;
-				break;
-			}
-		}
-		if (seat != null) {
-			Fork sharedFork;
-			Fork otherFork;
-			int sharedForkIndex;
-			if (seat.getForks()[0].isShared()) {
-				sharedFork = seat.getForks()[0];
-				otherFork = seat.getForks()[1];
-				sharedForkIndex = 0;
-			} else {
-				sharedFork = seat.getForks()[1];
-				otherFork = seat.getForks()[0];
-				sharedForkIndex = 1;
-			}
-			sharedFork.decrementUsageNumber();
-			// TODO: check
-			usedForks.add(f);
-			f.incrementUsageNumber();
-			if (sharedForkIndex == 0)
-				seat.setForks(f, otherFork);
-			else
-				seat.setForks(otherFork, f);
-		} else if (!unusedSeats.isEmpty() && !usableSeats.isEmpty()) {
-			// for all seats are 2 forks available so we can grab the last seats
-			// fork for sharing and adding a new seat
-			Seat unsuedSeat = unusedSeats.remove(0);
-			Fork lastFork = usableSeats.get(0).getForks()[1];
-			lastFork.incrementUsageNumber();
-			f.incrementUsageNumber();
-			unsuedSeat.setForks(lastFork, f);
-			usableSeats.add(unsuedSeat);
-		} else {
-			// no seats with a shared fork or any unused seats
-			unusedForks.add(f);
-			if (!unusedSeats.isEmpty())
-				registerNewSeat(unusedSeats.remove(0));
-		}
-	}
-
-	@Override
-	public void removeFork(Fork f) throws RemoteException {
-		// TODO: implement this
-		if (unusedForks.contains(f)) {
-			unusedForks.remove(f);
-			return;
+		synchronized (usableSeats) {
+			return usableSeats.size();
 		}
 	}
 
 	@Override
 	public void findNewSeat(Philosopher p) throws RemoteException {
-		getBestSeat().waitForSeat(p);
+		// TODO: getBestSeat().waitForSeat(p);
 	}
 
 	@Override
 	public void updateQueueSize(Seat s, int waitingPhilosophers)
 			throws RemoteException {
-		System.err.println("updating suggestions");
-		synchronized (suggestions) {
-			Iterator<Seat> i = suggestions.keySet().iterator();
-			while (i.hasNext()) {
-				Seat curr = i.next();
-				if (curr.hashCode() == s.hashCode())
-					i.remove();
-			}
-			suggestions.put(s, waitingPhilosophers);
-			System.err.println("new best "+suggestions.firstKey());
-		}
-
+		// TODO: remove...
 	}
 
 	@Override
@@ -197,11 +69,78 @@ public class TableImplementation implements Table, Runnable {
 		if (job != null) {
 			link.remove(s);
 			job.setSeatReady(s);
-			if (job.isReady()) {
-				System.out.println(s + " job ready");
-				addNewSeatAndFork(job);
+			switch (job.getType()) {
+			case ADD:
+				if (job.isReady()) {
+					System.out.println(s + " job ready");
+					addNewSeatAndFork(job);
+				}
+				break;
+			case REMOVE:
+				if (!link.containsValue(job)) {
+					remove(job);
+				}
+				break;
+			default:
+				break;
 			}
 		}
+	}
+
+	private void remove(final Job job) {
+		new Thread() {
+			public void run() {
+				if (jobs.remove(job)) {
+					try {
+						Seat prev = job.getSeats()[0];
+						Seat next = job.getSeats()[1];
+						Seat toRemove = job.getNewSeat();
+						Collection<Philosopher> waitingPhilosophers = toRemove
+								.getWaitingPhilosophers();
+						for (Philosopher p : waitingPhilosophers) {
+							findNewSeat(p);
+						}
+						int prevIndex = usableSeats.indexOf(prev);
+						int nextIndex = usableSeats.indexOf(next);
+						if (prevIndex == usableSeats.size() - 1) {
+							prev.setLast(false);
+						}
+						if (nextIndex == usableSeats.size() - 1) {
+							next.setLast(false);
+						}
+						synchronized (usableSeats) {
+							usableSeats.remove(toRemove);
+						}
+						synchronized (sug) {
+							List<Seat> hostlist = sug.get(job.getHost());
+							hostlist.remove(toRemove);
+							sug.put(job.getHost(), hostlist);
+						}
+						next.setForks(prev.getLeftFork(), next.getRightFork());
+						prev.setNextSeat(next);
+						next.setPrevious(prev);
+						prevIndex = usableSeats.indexOf(prev);
+						nextIndex = usableSeats.indexOf(next);
+						if (prevIndex == usableSeats.size() - 1) {
+							prev.setLast(true);
+						}
+						if (nextIndex == usableSeats.size() - 1) {
+							next.setLast(true);
+						}
+						prev.continueAfterSync();
+						next.continueAfterSync();
+					} catch (RemoteException e) {
+
+					} finally {
+						// wartenden sync freigeben
+						syncing = false;
+						synchronized (SYNC_MONITOR) {
+							SYNC_MONITOR.notify();
+						}
+					}
+				}
+			}
+		}.start();
 	}
 
 	private void addNewSeatAndFork(final Job job) {
@@ -210,19 +149,59 @@ public class TableImplementation implements Table, Runnable {
 
 				if (jobs.remove(job)) {
 					try {
-						Seat first = job.getSeats()[0];
-						Seat last = job.getSeats()[1];
-						last.setLast(false);
-						Fork oldLast = last.getRightFork();
+						Seat next = job.getSeats()[0];
+						Seat prev = job.getSeats()[1];
+						System.out.println("Next: "+next.getIdentitifier());
+						System.out.println("Prev: "+prev.getIdentitifier());
+						synchronized(usableSeats) {
+							int nextIndex = usableSeats.indexOf(next);
+							int prevIndex = usableSeats.indexOf(prev);
+							if(prevIndex == usableSeats.size()-1) {
+								next.setLast(false);
+							}
+							if(nextIndex == usableSeats.size()-1) {
+								prev.setLast(false);
+							}
+						}
+						//next.setLast(false);
+						Fork prevRightFork = prev.getRightFork();
 						Seat newSeat = job.getNewSeat();
 						Fork newFork = job.getNewFork();
-						newSeat.setForks(oldLast, newFork);
-						newSeat.setLast(true);
-						first.setForks(newFork, first.getRightFork());
-						usableSeats.add(newSeat);
+						newSeat.setForks(prevRightFork, newFork);
+						
+						//newSeat.setLast(true);
+						next.setForks(newFork, next.getRightFork());
+						prev.setNextSeat(newSeat);
+						newSeat.setNextSeat(next);
+						newSeat.setPrevious(prev);
+						next.setPrevious(newSeat);
+						synchronized (usableSeats) {
+							int prevIndex = usableSeats.indexOf(prev);
+							usableSeats.add(prevIndex+1,newSeat);
+							int newIndex = usableSeats.indexOf(newSeat);
+							int nextIndex = usableSeats.indexOf(next);
+							if(newIndex == usableSeats.size()-1) {
+								newSeat.setLast(true);
+							}
+							if(nextIndex == usableSeats.size()-1) {
+								next.setLast(true);
+							}
+						}
+
+						List<Seat> hostList = null;
+						synchronized (sug) {
+							sug.get(job.getHost());
+						}
+						if (hostList == null) {
+							hostList = new LinkedList<Seat>();
+						}
+						hostList.add(newSeat);
+						synchronized (sug) {
+							sug.put(job.getHost(), hostList);
+						}
 						System.out.println("job finished");
-						first.continueAfterSync();
-						last.continueAfterSync();
+						next.continueAfterSync();
+						prev.continueAfterSync();
 						newSeat.continueAfterSync();
 					} catch (RemoteException e) {
 					} finally {
@@ -240,28 +219,51 @@ public class TableImplementation implements Table, Runnable {
 	private Set<Job> jobs = new HashSet<Job>();
 	private HashMap<Seat, Job> link = new HashMap<Seat, Job>();
 	private boolean syncing;
+	private HashMap<String, List<Seat>> sug = new HashMap<String, List<Seat>>();
 
 	// TODO: wenn ein schnell zwei seats erstellt werden könnten probleme
 	// auftreten ...
 	@Override
-	public void registerNewSeatAndFork(Seat s, Fork f) throws RemoteException {
+	public void registerNewSeatAndFork(Seat s, Fork f, String host)
+			throws RemoteException {
 		// TODO: sync nur wenn ein sync abgeschlossen ist ... :-)
-		if(usableSeats.isEmpty()) {
-			if(unusedForks.isEmpty()) {
-				unusedForks.add(f);
-				unusedSeats.add(s);
-			} else {
-				Seat firstSeat = unusedSeats.remove(0);
-				Fork firstFork = unusedForks.remove(0);
-				firstSeat.setForks(f, firstFork);
-				s.setForks(firstFork, f);
-				s.setLast(true);
-				usableSeats.add(firstSeat);
-				usableSeats.add(s);
-				firstSeat.continueAfterSync();
-				s.continueAfterSync();
+		System.out.println("registering new seat and fork from host: " + host);
+		synchronized (usableSeats) {
+			if (usableSeats.isEmpty()) {
+				if (unusedForks.isEmpty()) {
+					unusedForks.add(f);
+					unusedSeats.add(s);
+				} else {
+					Seat firstSeat = unusedSeats.remove(0);
+					Fork firstFork = unusedForks.remove(0);
+					firstSeat.setForks(f, firstFork);
+					s.setForks(firstFork, f);
+					s.setLast(true);
+					firstSeat.setNextSeat(s);
+					s.setNextSeat(firstSeat);
+					firstSeat.setPrevious(s);
+					s.setPrevious(firstSeat);
+					synchronized (usableSeats) {
+						usableSeats.add(firstSeat);
+						usableSeats.add(s);
+					}
+					List<Seat> hostList = null;
+					synchronized (sug) {
+						hostList = sug.get(host);
+					}
+					if (hostList == null) {
+						hostList = new LinkedList<Seat>();
+					}
+					hostList.add(firstSeat);
+					hostList.add(s);
+					synchronized (sug) {
+						sug.put(host, hostList);
+					}
+					firstSeat.continueAfterSync();
+					s.continueAfterSync();
+				}
+				return;
 			}
-			return;
 		}
 		while (syncing) {
 			synchronized (SYNC_MONITOR) {
@@ -276,9 +278,22 @@ public class TableImplementation implements Table, Runnable {
 		System.out.println("registering new seat and fork");
 		synchronized (SYNC_MONITOR) {
 
-			final Seat firstSeat = usableSeats.get(0);
-			final Seat lastSeat = usableSeats.get(usableSeats.size() - 1);
-			Job job = new Job(firstSeat, lastSeat, s, f);
+			Seat firstSeat = usableSeats.get(0);
+			Seat lastSeat = usableSeats.get(usableSeats.size() - 1);
+			List<Seat> hostList = null;
+			synchronized (sug) {
+				hostList = sug.get(host);
+			}
+			//falls es bereits lokale Plätze gibt dann füge die neuen dor ein ..
+			if(hostList != null) {
+				lastSeat = hostList.get(hostList.size()-1);
+				firstSeat = lastSeat.getNextSeat();
+				//original
+				//firstSeat = hostList.get(hostList.size()-1);
+				//lastSeat = firstSeat.getNextSeat();
+			}
+			
+			Job job = new Job(JobType.ADD, firstSeat, lastSeat, s, f, host);
 			jobs.add(job);
 			link.put(firstSeat, job);
 			link.put(lastSeat, job);
@@ -290,8 +305,53 @@ public class TableImplementation implements Table, Runnable {
 	}
 
 	@Override
-	public void removeSeatAndFork(Seat s, Fork f) throws RemoteException {
+	public void removeSeatAndFork(Seat s, Fork f, String host) throws RemoteException {
+		synchronized (usableSeats) {
+			if (!usableSeats.contains(s)) {
+				return;
+			}
+		}
+		while (syncing) {
+			synchronized (SYNC_MONITOR) {
+				try {
+					System.out.println("waiting to sync complete...");
+					SYNC_MONITOR.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		System.out.println("removing seat and fork");
+		synchronized (SYNC_MONITOR) {
+			// TODO: implement this..
+			s.pauseForSync();
+			s.getNextSeat().pauseForSync();
+			s.getPrevious().pauseForSync();
+			Job job = new Job(JobType.REMOVE, s.getPrevious(), s.getNextSeat(),
+					s, f, host);
+			// Collection<Philosopher> waitingPhilosophers =
+			// s.getWaitingPhilosophers();
+			jobs.add(job);
+			link.put(s.getPrevious(), job);
+			link.put(s.getNextSeat(), job);
+			link.put(s, job);
+			syncing = true;
+		}
 
+	}
+
+	@Override
+	public void printUsableSeats() throws RemoteException {
+		synchronized (usableSeats) {
+			Seat start = usableSeats.get(0);
+			System.out.println(start.getIdentitifier());
+			Seat current = start.getNextSeat();
+			while(!current.getIdentitifier().equals(start.getIdentitifier())) {
+				System.out.println(current.getIdentitifier());
+				current = current.getNextSeat();
+			}
+		}
+		
 	}
 
 }

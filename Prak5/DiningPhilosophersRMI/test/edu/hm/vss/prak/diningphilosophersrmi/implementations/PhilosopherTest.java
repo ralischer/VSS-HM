@@ -24,10 +24,11 @@ public class PhilosopherTest {
 		philosophers = new PhilosopherImplementation[4];
 		for(int i = 0; i < 4; i++) {
 			Fork f = new ForkImplementation();
-			t.registerNewFork(f);
+			//t.registerNewFork(f);
 			SeatImplementation s = new SeatImplementation();
 			s.setTable(t);
-			t.registerNewSeat(s);
+			//t.registerNewSeat(s);
+			t.registerNewSeatAndFork(s, f);
 			new Thread(s).start();
 			philosophers[i] = new PhilosopherImplementation();
 			philosophers[i].setTable(t);

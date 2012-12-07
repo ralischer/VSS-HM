@@ -22,29 +22,12 @@ public class ForkImplementation extends UnicastRemoteObject implements Fork, Ser
 	{
 		instanceNumber = instanceCounter++;
 	}
-	
-	private int usageNumber = 0;
 
 	@Override
 	public boolean isShared() throws RemoteException{
-		synchronized(this) {
-			return usageNumber > 1;
-		}
+		return true;
 	}
 
-	@Override
-	public void incrementUsageNumber() throws RemoteException {
-		synchronized(this) {
-			usageNumber++;
-		}
-	}
-
-	@Override
-	public void decrementUsageNumber() throws RemoteException {
-		synchronized(this) {
-			usageNumber--;
-		}
-	}
 	
 	@Override
 	public String toString() {

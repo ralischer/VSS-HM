@@ -1,7 +1,6 @@
 package edu.hm.vss.prak.diningphilosophersrmi;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.rmi.Naming;
 import java.rmi.registry.LocateRegistry;
@@ -53,7 +52,11 @@ public class DiningPhilosopherRMI {
 				String port = br.readLine();
 				table = (Table) Naming.lookup("//"+host+":"+port+"/table");//LocateRegistry.getRegistry(host,Integer.parseInt(port)).lookup("table");
 				System.out.println("table == null ? " + (table == null));
-			} 
+			} else if(input.equals("show usable seats")) {
+				if(table != null) {
+					table.printUsableSeats();
+				}
+			}
 		}
 		br.close();
 		System.exit(0);

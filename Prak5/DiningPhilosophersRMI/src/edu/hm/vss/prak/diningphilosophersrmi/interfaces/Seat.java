@@ -10,7 +10,6 @@ public interface Seat extends Remote{
 	public int getWaitingCount() throws RemoteException;
 	public void leaveSeat() throws RemoteException;
 	public void setForks(Fork left, Fork right) throws RemoteException;
-	public Fork[] getForks() throws RemoteException;
 	public Collection<Philosopher> getWaitingPhilosophers() throws RemoteException;
 	public void setTable(Table t) throws RemoteException;
 	public int getRating() throws RemoteException;
@@ -19,4 +18,9 @@ public interface Seat extends Remote{
 	public void setLast(boolean isLast) throws RemoteException;
 	public Fork getLeftFork() throws RemoteException;
 	public Fork getRightFork() throws RemoteException;
+	public Seat getNextSeat() throws RemoteException;
+	public void setNextSeat(Seat next) throws RemoteException;
+	public Seat getPrevious() throws RemoteException;
+	public void setPrevious(Seat previous) throws RemoteException;
+	public String getIdentitifier() throws RemoteException;
 }

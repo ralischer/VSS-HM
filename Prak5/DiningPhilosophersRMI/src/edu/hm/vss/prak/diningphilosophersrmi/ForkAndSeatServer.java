@@ -15,6 +15,8 @@ import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Table;
 
 public class ForkAndSeatServer {
 
+	private static final String hostname = System.getProperty("java.rmi.server.hostname");
+	
 	public static void main(String... args) throws AccessException, RemoteException, NotBoundException {
 		String tableHostAddress = args[0];
 		int tableHostPort = Integer.parseInt(args[1]);
@@ -42,7 +44,7 @@ public class ForkAndSeatServer {
 			new Thread(seats[i]).start();
 			seats[i].setTable(table);
 			//table.registerNewSeat(seatStub);
-			table.registerNewSeatAndFork(seats[i], forks[i]);
+			table.registerNewSeatAndFork(seats[i], forks[i],hostname);
 		}
 		
 		//System.out.println("server running");

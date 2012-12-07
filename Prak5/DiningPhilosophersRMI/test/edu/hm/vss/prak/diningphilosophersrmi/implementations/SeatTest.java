@@ -25,6 +25,8 @@ public class SeatTest {
 		f1.incrementUsageNumber();
 		f2.incrementUsageNumber();
 		s1.setForks(f1, f2);
+		s0.setNextSeat(s1);
+		s1.setNextSeat(s0);
 		assertEquals(-1,s1.compareTo(s0));
 	}
 	

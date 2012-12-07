@@ -13,7 +13,7 @@ import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Philosopher;
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Seat;
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Table;
 
-public class SeatImplementation extends UnicastRemoteObject/*extends Thread*/ implements Seat, Runnable, Comparable<Seat>, Serializable{
+public class SeatImplementation extends UnicastRemoteObject implements Seat, Runnable, Comparable<Seat>, Serializable{
 	
 	public SeatImplementation() throws RemoteException {
 		super();
@@ -23,6 +23,7 @@ public class SeatImplementation extends UnicastRemoteObject/*extends Thread*/ im
 	 * 
 	 */
 	private static final long serialVersionUID = -5639426373498801933L;
+	private static final String hostname = System.getProperty("java.rmi.server.hostname");
 	private final int instanceNumber;
 	private static int instanceCounter = 0;
 	{
@@ -31,7 +32,6 @@ public class SeatImplementation extends UnicastRemoteObject/*extends Thread*/ im
 	
 	private Fork leftFork;
 	private Fork rightFork;
-	private Fork[] forks;
 	
 	private BlockingDeque<Philosopher> waitingPhilosophers = new LinkedBlockingDeque<Philosopher>();
 	
@@ -102,13 +102,14 @@ public class SeatImplementation extends UnicastRemoteObject/*extends Thread*/ im
 			e1.printStackTrace();
 		}
 		//TODO in eigenen Thread auslagern ...
-		/*
+		
 		newPhilosophers++;
 		if(newPhilosophers > maxNewPhilosophers ){
 			if(table != null)
 				table.updateQueueSize(this, waitingPhilosophers.size());
+			newPhilosophers = 0;
 		}
-		*/
+		
 	}
 
 	@Override
@@ -116,9 +117,14 @@ public class SeatImplementation extends UnicastRemoteObject/*extends Thread*/ im
 		return waitingPhilosophers.size();
 	}
 
+	int count = 0;
+	private Seat nextSeat;
+	private Seat previousSeat;
+	
 	@Override
 	public void leaveSeat() throws RemoteException {
-		table.updateQueueSize(this, waitingPhilosophers.size());
+		if(count++ % 5 == 0)
+			table.updateQueueSize(this, waitingPhilosophers.size());
 		synchronized(MONITOR) {
 			MONITOR.notify();
 		}
@@ -128,15 +134,8 @@ public class SeatImplementation extends UnicastRemoteObject/*extends Thread*/ im
 	public void setForks(Fork left, Fork right) throws RemoteException {
 		this.leftFork = left;
 		this.rightFork = right;
-		forks = new Fork[]{left,right};
 		if(table != null)
 			table.updateQueueSize(this, waitingPhilosophers.size());
-	}
-
-	@Override
-	public Fork[] getForks() throws RemoteException {
-		//TODO: maybe hold own array
-		return forks;//new Fork[]{leftFork, rightFork};
 	}
 	
 	@Override
@@ -176,8 +175,8 @@ public class SeatImplementation extends UnicastRemoteObject/*extends Thread*/ im
 	private static int computeRating(Seat s) {
 		int rating = 1;
 		try {
-			rating += s.getForks()[0].isShared() ? 0 : 1;
-			rating += s.getForks()[1].isShared() ? 0 : 1;
+			rating += s.getLeftFork().isShared() ? 0 : 1;
+			rating += s.getRightFork().isShared() ? 0 : 1;
 			//TODO: test this
 			rating -= ((SeatImplementation)s).waitingPhilosophers.size()/rating;
 		} catch (RemoteException e) {
@@ -201,7 +200,7 @@ public class SeatImplementation extends UnicastRemoteObject/*extends Thread*/ im
 	@Override
 	public boolean equals(Object x) {
 		if(x instanceof SeatImplementation) {
-			return ((SeatImplementation) x).instanceNumber == this.instanceNumber;
+			return ((SeatImplementation) x).hashCode() == this.hashCode();
 		}
 		System.err.println("not an instance of seat");
 		return false;
@@ -209,7 +208,7 @@ public class SeatImplementation extends UnicastRemoteObject/*extends Thread*/ im
 	
 	@Override
 	public int hashCode() {
-		return instanceNumber;
+		return hostname.hashCode()+instanceNumber;
 	}
 
 	@Override
@@ -239,5 +238,30 @@ public class SeatImplementation extends UnicastRemoteObject/*extends Thread*/ im
 	@Override
 	public void setLast(boolean isLast) throws RemoteException {
 		this.isLast = isLast;		
+	}
+
+	@Override
+	public Seat getNextSeat() throws RemoteException {
+		return nextSeat;
+	}
+
+	@Override
+	public void setNextSeat(Seat next) throws RemoteException {
+		this.nextSeat = next;
+	}
+
+	@Override
+	public Seat getPrevious() throws RemoteException {
+		return previousSeat;
+	}
+
+	@Override
+	public void setPrevious(Seat previous) throws RemoteException {
+		this.previousSeat = previous;
+	}
+
+	@Override
+	public String getIdentitifier() throws RemoteException {
+		return hostname+"-Seat#"+instanceNumber;
 	}
 }

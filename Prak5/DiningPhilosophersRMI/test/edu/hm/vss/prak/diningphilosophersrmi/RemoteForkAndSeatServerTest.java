@@ -24,9 +24,10 @@ public class RemoteForkAndSeatServerTest {
 	}
 
 	@Test
-	public void testMain() throws AccessException, RemoteException, NotBoundException {
+	public void testMain() throws AccessException, RemoteException, NotBoundException, InterruptedException {
 		Table table = (Table) LocateRegistry.getRegistry(1102).lookup("table");
 		assertNotNull(table);
+		Thread.sleep(5000);
 		assertEquals(3,table.getSeatAmount());
 	}
 
@@ -34,6 +35,7 @@ public class RemoteForkAndSeatServerTest {
 	public void testWithOnePhilosopher() throws AccessException, RemoteException, NotBoundException, InterruptedException {
 		Table table = (Table) LocateRegistry.getRegistry(1102).lookup("table");
 		assertNotNull(table);
+		Thread.sleep(5000);
 		assertEquals(3,table.getSeatAmount());
 		PhilosopherImplementation p = new PhilosopherImplementation();
 		p.setTable(table);

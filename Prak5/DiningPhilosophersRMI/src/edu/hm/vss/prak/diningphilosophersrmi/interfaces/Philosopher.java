@@ -10,5 +10,6 @@ public interface Philosopher extends Remote{
 	public void setTable(Table t) throws RemoteException;
 	public void stop() throws RemoteException;
 	public void pause() throws RemoteException;
+	public String getName() throws RemoteException;
 	
 }

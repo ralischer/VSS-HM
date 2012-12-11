@@ -48,7 +48,7 @@ public class SeatImplementation extends UnicastRemoteObject implements Seat, Run
 		while(running ) {
 			try {
 				while(sync) {
-					System.out.println(this+" ready to sync going to tell the table");
+					//System.out.println(this+" ready to sync going to tell the table");
 					table.readyToSync(this);
 					synchronized (MONITOR) {
 						MONITOR.wait();
@@ -56,7 +56,7 @@ public class SeatImplementation extends UnicastRemoteObject implements Seat, Run
 				}
 				Philosopher p = waitingPhilosophers.poll(1000, TimeUnit.MILLISECONDS);
 				if(p != null) {
-					System.out.println("philosopher ready");
+					//System.out.println("philosopher ready");
 					p.seatAvailable(this);
 				} else {
 					continue;
@@ -69,7 +69,7 @@ public class SeatImplementation extends UnicastRemoteObject implements Seat, Run
 			}
 			synchronized (MONITOR) {
 				try {
-					System.out.println(this+" waiting for philosopher ready...");
+					//System.out.println(this+" waiting for philosopher ready...");
 					MONITOR.wait();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
@@ -192,11 +192,6 @@ public class SeatImplementation extends UnicastRemoteObject implements Seat, Run
 	@Override
 	public int hashCode() {
 		return hostname.hashCode()+instanceNumber;
-	}
-
-	@Override
-	public int getRating() throws RemoteException {
-		return computeRating(this);
 	}
 
 	@Override

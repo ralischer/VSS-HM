@@ -2,6 +2,7 @@ package edu.hm.vss.prak.diningphilosophersrmi.implementations;
 
 import java.io.Serializable;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Random;
 
 import edu.hm.vss.prak.diningphilosophersrmi.graphical.Event;
@@ -13,41 +14,47 @@ import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Philosopher;
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Seat;
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Table;
 
-public class PhilosopherImplementation implements Philosopher, Runnable, Serializable{
+public class PhilosopherImplementation extends UnicastRemoteObject implements Philosopher, Runnable,
+		Serializable {
+
+	public PhilosopherImplementation() throws RemoteException {
+		super();
+	}
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -7856989448973511203L;
-	private static final String hostname = System.getProperty("java.rmi.server.hostname");
+	private static final String hostname = System
+			.getProperty("java.rmi.server.hostname");
 	private final int instanceNumber;
 	private static int instanceCounter = 0;
 	{
 		instanceNumber = instanceCounter++;
-		EATING_TIME = 100+random.nextInt(3000);
-		GREEDY_TIME = 100+random.nextInt(3000);
+		EATING_TIME = 100 + random.nextInt(3000);
+		GREEDY_TIME = 100 + random.nextInt(3000);
 	}
-	
+
 	private static final Random random = new Random();
-	
+
 	private final long GREEDY_TIME;
 	private final long EATING_TIME;
 	private boolean running = true;
 	private int eatings = 0;
-	
+
 	private final String MONITOR = new String();
-	
+
 	private Table table;
 	private Seat seat;
-	
+
 	@Override
 	public void run() {
-		while(running) {
-			while(table == null) {
+		while (running) {
+			while (table == null) {
 				synchronized (MONITOR) {
 					try {
-						log(this+" waiting for table");
-						if(viewer != null) {
+						log(this + " waiting for table");
+						if (viewer != null) {
 							try {
 								Event event = new EventImplementation();
 								event.setIdentifier(getName());
@@ -65,7 +72,7 @@ public class PhilosopherImplementation implements Philosopher, Runnable, Seriali
 				}
 			}
 			try {
-				if(viewer != null) {
+				if (viewer != null) {
 					try {
 						Event event = new EventImplementation();
 						event.setIdentifier(getName());
@@ -82,62 +89,50 @@ public class PhilosopherImplementation implements Philosopher, Runnable, Seriali
 			}
 			try {
 				seat = table.getBestSeat(hostname);
-				//TODO: überarbeiten..
+				// TODO: überarbeiten..
 				Seat currentBest = seat;
 				Seat currentSeat = seat.getNextSeat();
-				while(!currentSeat.getIdentitifier().equals(seat.getIdentitifier())) {
-					if(currentSeat.getWaitingCount() < currentBest.getWaitingCount()) {
+				while (!currentSeat.getIdentitifier().equals(
+						seat.getIdentitifier())) {
+					if (currentSeat.getWaitingCount() < currentBest
+							.getWaitingCount()) {
 						currentBest = currentSeat;
 					}
-						if(currentBest.getWaitingCount() == 0) {
-							break;
-						}
+					if (currentBest.getWaitingCount() == 0) {
+						break;
+					}
 					currentSeat = currentSeat.getNextSeat();
 				}
-				
+
 				seat = currentBest;
-				
-				//log(this+" found "+seat.toString());
+
 				currentBest.waitForSeat(this);
-				/*
-				synchronized(MONITOR) {
-					try {
-						log(this+" waiting for seat...");
-						MONITOR.wait();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-				*/
-				//Fork[] forks = seat.getForks();
-				//synchronized(seat.getLeftFork()){
-					//synchronized(seat.getRightFork()) {
+				
 				Fork left = seat.getLeftFork();
 				Fork right = seat.getRightFork();
 				left.request();
 				right.request();
-						if(viewer != null) {
-							Event event = new EventImplementation();
-							event.setIdentifier(getName());
-							event.setState(State.EATING);
-							event.setTarget(seat.getIdentitifier());
-							try {
-								viewer.addEvent(event);
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-						}
-						try {
-							Thread.sleep(EATING_TIME);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-						eatings++;
-					//}
-				//}
-						right.release();
-						left.release();
-				if(viewer != null) {
+				if (viewer != null) {
+					Event event = new EventImplementation();
+					event.setIdentifier(getName());
+					event.setState(State.EATING);
+					event.setTarget(seat.getIdentitifier());
+					try {
+						viewer.addEvent(event);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				try {
+					Thread.sleep(EATING_TIME);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				eatings++;
+				
+				right.release();
+				left.release();
+				if (viewer != null) {
 					Event event = new EventImplementation();
 					event.setIdentifier(getName());
 					event.setState(State.WAITING);
@@ -156,7 +151,7 @@ public class PhilosopherImplementation implements Philosopher, Runnable, Seriali
 				e.printStackTrace();
 			}
 		}
-		
+
 	}
 
 	@Override
@@ -166,8 +161,8 @@ public class PhilosopherImplementation implements Philosopher, Runnable, Seriali
 
 	@Override
 	public void seatAvailable(Seat s) throws RemoteException {
-		if(s != seat) {
-			//old seat is no longer available yet
+		if (s != seat) {
+			// old seat is not longer available yet
 			seat = s;
 		}
 		seatAvailable = true;
@@ -177,7 +172,7 @@ public class PhilosopherImplementation implements Philosopher, Runnable, Seriali
 	}
 
 	private boolean seatAvailable = false;
-	
+
 	@Override
 	public void setTable(Table t) throws RemoteException {
 		this.table = t;
@@ -195,20 +190,20 @@ public class PhilosopherImplementation implements Philosopher, Runnable, Seriali
 		long time = System.currentTimeMillis();
 		System.out.println(time + ": " + s);
 	}
-	
+
 	@Override
 	public String toString() {
-		return "Philosopher#"+instanceNumber;
+		return "Philosopher#" + instanceNumber;
 	}
 
 	@Override
 	public void pause() throws RemoteException {
-		if(seatAvailable) {
+		if (seatAvailable) {
 			seatAvailable = false;
 			return;
 		}
-		synchronized(MONITOR){
-			if(viewer != null) {
+		synchronized (MONITOR) {
+			if (viewer != null) {
 				Event event = new EventImplementation();
 				event.setIdentifier(getName());
 				event.setState(State.WAITING);
@@ -229,12 +224,12 @@ public class PhilosopherImplementation implements Philosopher, Runnable, Seriali
 
 	@Override
 	public String getName() throws RemoteException {
-		return hostname+"-Philosopher#"+instanceNumber;
+		return hostname + "-Philosopher#" + instanceNumber;
 	}
-	
+
 	private Viewer viewer;
-	
-	public void setViewer(Viewer viewer) throws RemoteException{
+
+	public void setViewer(Viewer viewer) throws RemoteException {
 		this.viewer = viewer;
 	}
 }

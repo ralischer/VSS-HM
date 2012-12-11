@@ -12,7 +12,6 @@ public interface Seat extends Remote{
 	public void setForks(Fork left, Fork right) throws RemoteException;
 	public Collection<Philosopher> getWaitingPhilosophers() throws RemoteException;
 	public void setTable(Table t) throws RemoteException;
-	public int getRating() throws RemoteException;
 	public void pauseForSync() throws RemoteException;
 	public void continueAfterSync() throws RemoteException;
 	public void setLast(boolean isLast) throws RemoteException;

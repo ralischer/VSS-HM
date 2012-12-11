@@ -14,16 +14,16 @@ public class Job implements Serializable{
 	
 	private int seatsReady = 0;
 	private final Seat[] seats = new Seat[2];
-	private final Seat newSeat;
-	private final Fork newFork;
+	private final Seat targetSeat;
+	private final Fork targetFork;
 	private final String hostname;
 	private final JobType type;
 	
-	public Job(JobType type, Seat first, Seat second, Seat newSeat, Fork newFork, String hostname) {
-		seats[0] = first;
-		seats[1] = second;
-		this.newSeat = newSeat;
-		this.newFork = newFork;
+	public Job(JobType type, Seat next, Seat prev, Seat targetSeat, Fork targetFork, String hostname) {
+		seats[0] = next;
+		seats[1] = prev;
+		this.targetSeat = targetSeat;
+		this.targetFork = targetFork;
 		this.hostname = hostname;
 		this.type = type;
 	}
@@ -42,12 +42,12 @@ public class Job implements Serializable{
 		return seats;
 	}
 	
-	public Seat getNewSeat() {
-		return newSeat;
+	public Seat getTargetSeat() {
+		return targetSeat;
 	}
 	
-	public Fork getNewFork() {
-		return newFork;
+	public Fork getTargetFork() {
+		return targetFork;
 	}
 	
 	public String getHost() {

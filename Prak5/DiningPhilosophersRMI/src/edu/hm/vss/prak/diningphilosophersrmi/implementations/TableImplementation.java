@@ -18,11 +18,9 @@ import edu.hm.vss.prak.diningphilosophersrmi.util.JobType;
 public class TableImplementation implements Table, Runnable {
 
 	private static final Object SYNC_MONITOR = new Object();
-	List<Philosopher> philosophers = new LinkedList<Philosopher>();
-	List<Seat> unusedSeats = new LinkedList<Seat>();
-	List<Fork> unusedForks = new LinkedList<Fork>();
-	List<Seat> usableSeats = new LinkedList<Seat>();
-	List<Fork> usedForks = new LinkedList<Fork>();
+	private List<Seat> unusedSeats = new LinkedList<Seat>();
+	private List<Fork> unusedForks = new LinkedList<Fork>();
+	private List<Seat> usableSeats = new LinkedList<Seat>();
 
 	@Override
 	public void run() {
@@ -60,9 +58,14 @@ public class TableImplementation implements Table, Runnable {
 	@Override
 	public void readyToSync(Seat s) throws RemoteException {
 		System.out.println(s + " readyToSync");
-		Job job = link.get(s);
+		Job job = null;
+		synchronized(link) {
+			job = link.get(s);
+		}
 		if (job != null) {
-			link.remove(s);
+			synchronized(link) {
+				link.remove(s);
+			}
 			job.setSeatReady(s);
 			switch (job.getType()) {
 			case ADD:
@@ -72,7 +75,11 @@ public class TableImplementation implements Table, Runnable {
 				}
 				break;
 			case REMOVE:
-				if (!link.containsValue(job)) {
+				boolean jobNotReady;
+				synchronized(link) {
+					jobNotReady = link.containsValue(job);
+				}
+				if (!jobNotReady) {
 					remove(job);
 				}
 				break;
@@ -89,7 +96,7 @@ public class TableImplementation implements Table, Runnable {
 					try {
 						Seat prev = job.getSeats()[0];
 						Seat next = job.getSeats()[1];
-						Seat toRemove = job.getNewSeat();
+						Seat toRemove = job.getTargetSeat();
 						Collection<Philosopher> waitingPhilosophers = toRemove
 								.getWaitingPhilosophers();
 						for (Philosopher p : waitingPhilosophers) {
@@ -160,8 +167,8 @@ public class TableImplementation implements Table, Runnable {
 						}
 						//next.setLast(false);
 						Fork prevRightFork = prev.getRightFork();
-						Seat newSeat = job.getNewSeat();
-						Fork newFork = job.getNewFork();
+						Seat newSeat = job.getTargetSeat();
+						Fork newFork = job.getTargetFork();
 						newSeat.setForks(prevRightFork, newFork);
 						
 						//newSeat.setLast(true);

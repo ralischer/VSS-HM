@@ -18,7 +18,6 @@ public class ViewerImplementation extends UnicastRemoteObject implements Viewer,
 	
 	protected ViewerImplementation() throws RemoteException {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	private final BlockingQueue<Event> events = new LinkedBlockingQueue<Event>();

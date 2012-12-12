@@ -197,16 +197,16 @@ public class SeatImplementation extends UnicastRemoteObject implements Seat, Run
 	@Override
 	public void pauseForSync() throws RemoteException {
 		sync  = true;
-		synchronized (MONITOR) {
+		/*synchronized (MONITOR) {
 			MONITOR.notify();
-		}
+		}*/
 	}
 
 	@Override
 	public void continueAfterSync() throws RemoteException {
 		sync = false;
 		synchronized (MONITOR) {
-			MONITOR.notifyAll();
+			MONITOR.notify();
 		}
 	}
 
@@ -238,5 +238,10 @@ public class SeatImplementation extends UnicastRemoteObject implements Seat, Run
 	@Override
 	public String getIdentitifier() throws RemoteException {
 		return hostname+"-Seat#"+instanceNumber;
+	}
+
+	@Override
+	public void addPhilosopherToQueue(Philosopher p) throws RemoteException, InterruptedException {
+		waitingPhilosophers.put(p);
 	}
 }

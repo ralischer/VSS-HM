@@ -32,7 +32,7 @@ public class TableImplementation implements Table, Runnable {
 	public Seat getBestSeat(String host) throws RemoteException {
 		synchronized (sug) {
 			List<Seat> seats = sug.get(host);
-			if (seats == null) {
+			if (seats == null || seats.size() == 0) {
 				synchronized (usableSeats) {
 					return usableSeats.get(0);
 				}
@@ -52,7 +52,11 @@ public class TableImplementation implements Table, Runnable {
 	@Override
 	public void findNewSeat(Philosopher p) throws RemoteException {
 		//just give them the first seat....
-		getBestSeat("null").waitForSeat(p);
+		try {
+			getBestSeat("null").addPhilosopherToQueue(p);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -80,6 +84,7 @@ public class TableImplementation implements Table, Runnable {
 					jobNotReady = link.containsValue(job);
 				}
 				if (!jobNotReady) {
+					System.out.println("Going to remove.....");
 					remove(job);
 				}
 				break;
@@ -131,6 +136,10 @@ public class TableImplementation implements Table, Runnable {
 						}
 						prev.continueAfterSync();
 						next.continueAfterSync();
+						//run the table again..
+						for(Seat seat: usableSeats) {
+							seat.continueAfterSync();
+						}
 					} catch (RemoteException e) {
 
 					} finally {
@@ -284,7 +293,7 @@ public class TableImplementation implements Table, Runnable {
 				hostList = sug.get(host);
 			}
 			//falls es bereits lokale Plätze gibt dann füge die neuen dor ein ..
-			if(hostList != null) {
+			if(hostList != null && hostList.size() > 0) {
 				lastSeat = hostList.get(hostList.size()-1);
 				firstSeat = lastSeat.getNextSeat();
 			}
@@ -328,6 +337,13 @@ public class TableImplementation implements Table, Runnable {
 			link.put(s.getPrevious(), job);
 			link.put(s.getNextSeat(), job);
 			link.put(s, job);
+			//blocking the whole table...
+			for(Seat seat: usableSeats) {
+				seat.pauseForSync();
+				link.put(seat, job);
+			}
+			
+			
 			syncing = true;
 		}
 

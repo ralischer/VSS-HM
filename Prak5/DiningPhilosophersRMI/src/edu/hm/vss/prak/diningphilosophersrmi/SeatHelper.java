@@ -37,12 +37,12 @@ public class SeatHelper {
 	}
 	
 	public synchronized void removeSeats(int amount) throws RemoteException {
-		if(seats.size() == 0 || seats.size() - amount < 0) {
+		if(seats.size() == 0 || (seats.size() - amount) < 0) {
 			return;
 		}
-		for(int i = seats.size()-1; i >= seats.size()-amount; i--) {
-			Seat s = seats.remove(i);
-			Fork f = forks.remove(i);
+		for(int i = 0; i < amount; i++) {
+			Seat s = seats.remove(seats.size()-1);
+			Fork f = forks.remove(seats.size()-1);
 			table.removeSeatAndFork(s, f, hostname);
 		}
 	}

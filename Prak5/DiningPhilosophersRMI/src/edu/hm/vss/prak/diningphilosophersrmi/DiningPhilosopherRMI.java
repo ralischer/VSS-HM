@@ -8,7 +8,6 @@ import java.rmi.NotBoundException;
 import java.rmi.registry.LocateRegistry;
 
 import edu.hm.vss.prak.diningphilosophersrmi.graphical.Viewer;
-import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Philosopher;
 import edu.hm.vss.prak.diningphilosophersrmi.interfaces.Table;
 
 public class DiningPhilosopherRMI {

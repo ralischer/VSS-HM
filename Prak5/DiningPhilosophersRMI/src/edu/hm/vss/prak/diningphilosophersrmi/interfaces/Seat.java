@@ -7,6 +7,13 @@ import java.util.Collection;
 public interface Seat extends Remote{
 
 	public void waitForSeat(Philosopher p) throws RemoteException;
+	/**
+	 * Use this Method <b>only</b> when Philosopher is already <b>waiting</b>!.
+	 * @param p the Philosopher that is waiting for a seat
+	 * @throws RemoteException
+	 * @throws InterruptedException 
+	 */
+	public void addPhilosopherToQueue(Philosopher p) throws RemoteException, InterruptedException;
 	public int getWaitingCount() throws RemoteException;
 	public void leaveSeat() throws RemoteException;
 	public void setForks(Fork left, Fork right) throws RemoteException;

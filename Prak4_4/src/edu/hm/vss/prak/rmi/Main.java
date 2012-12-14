@@ -6,11 +6,11 @@ import java.net.UnknownHostException;
 import edu.hm.vss.prak.rmi.interfaces.Foo;
 import edu.hm.vss.prak.rmi.interfaces.SimpleTasks;
 import edu.hm.vss.prak.rmi.rms.RemoteMethodService;
-import edu.hm.vss.prak.rmi.rms.exceptions.ClassNotBindedException;
+import edu.hm.vss.prak.rmi.rms.exceptions.ClassUnboundException;
 
 public class Main {
 
-	public static void main(String... args) throws UnknownHostException, IOException, ClassNotBindedException {
+	public static void main(String... args) throws UnknownHostException, IOException, ClassUnboundException {
 		RemoteMethodService rms = RemoteMethodService.getInstance("localhost", 8888);
 		Foo foo = rms.getInstace(Foo.class);
 		foo.hello();

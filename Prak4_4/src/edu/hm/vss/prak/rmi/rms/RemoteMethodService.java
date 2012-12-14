@@ -111,11 +111,10 @@ public class RemoteMethodService {
 		 *            die Pramater der Methode.
 		 * @return das Ergebnis der Methode - kann Void.Type liefern falls die
 		 *         Methode keinen Rückgabewert hat.
-		 * @throws IOException
-		 * @throws ClassNotFoundException
+		 * @throws Throwable 
 		 */
 		public Object invokeMethod(Method method, Object[] args)
-				throws IOException, ClassNotFoundException {
+				throws Throwable {
 			RequestWrapper request = new RequestWrapper();
 			request.requestType = RequestType.METHOD;
 			request.requestName = method.getName();
@@ -131,6 +130,9 @@ public class RemoteMethodService {
 			}
 
 			Object respone = objectInputStream.readObject();
+			if(respone instanceof Throwable) {
+				throw (Throwable) respone;
+			}
 			return respone;
 		}
 

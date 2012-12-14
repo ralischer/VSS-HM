@@ -1,5 +1,6 @@
-*/bin/
+bin/
 */.classpath
 */.settings/*
 */.project
+.metadata/
 *.pdf

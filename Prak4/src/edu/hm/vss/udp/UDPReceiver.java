@@ -68,7 +68,14 @@ public class UDPReceiver extends Thread {
 	}
 
 	public static void main(String[] args) throws IOException {
-		UDPManager manager = new UDPManager("localhost",
+		String ip;
+		if(args.length == 0){
+			ip = "localhost";
+		}
+		else{
+			ip = args[0];
+		}
+		UDPManager manager = new UDPManager(ip,
 				IPingPongConstants.RECEIVER_LISTENING_PORT,
 				IPingPongConstants.SENDER_LISTENING_PORT, 0);
 		UDPReceiver receiver = new UDPReceiver(IPingPongConstants.SENDER_MSG,

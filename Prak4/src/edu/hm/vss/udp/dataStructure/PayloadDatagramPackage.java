@@ -58,7 +58,7 @@ public class PayloadDatagramPackage {
 	public static ArrayList<byte[]> getDatagramContent(DatagramPacket data) {
 		byte[] content = data.getData();
 		int blocks = (int) content[0];
-		ArrayList<byte[]> result = new ArrayList<>(blocks);
+		ArrayList<byte[]> result = new ArrayList<byte[]>(blocks);
 		int currentBlockIndex = 1;
 		for (int i = 0; i < blocks; i++) {
 			int nextBlockIndex = currentBlockIndex + content[currentBlockIndex]
@@ -71,7 +71,7 @@ public class PayloadDatagramPackage {
 	}
 
 	public static void main(String[] args) {
-		List<byte[]> data = new ArrayList<>(2);
+		List<byte[]> data = new ArrayList<byte[]>(2);
 		data.add("Hello".getBytes());
 		data.add("World".getBytes());
 		DatagramPacket packet = createDatagramPacket(data, 1024);

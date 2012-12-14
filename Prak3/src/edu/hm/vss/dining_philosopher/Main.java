@@ -6,15 +6,15 @@ public class Main {
 
 	public static void main(String[] args) {
 
-		final int seats = 20; // minimum 2 seats required, since 1 seat is
+		final int seats = 5; // minimum 2 seats required, since 1 seat is
 								// reserved
-		final int totalPhilosphers = 200;
-		final int hungryPhilosophers = 199;
+		final int totalPhilosphers = 30;
+		final int hungryPhilosophers = 1;
 		final int maximumMealDifference = 1;
 
 		final int normalMeditationDuration = 1000;
 		final int hungryMeditationDuration = 0;
-		final int eatDuration = 10;
+		final int eatDuration = 30;
 
 		HashSet<Philosopher> philosophers = new HashSet<>();
 		Table table = new Table(seats, philosophers);

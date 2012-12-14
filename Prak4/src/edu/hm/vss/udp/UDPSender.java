@@ -65,12 +65,19 @@ public class UDPSender extends Thread {
 
 	public static void main(String[] args) throws SocketException,
 			UnknownHostException {
+		String targetUrl ;
+		if(args.length==0){
+			targetUrl = "localhost";
+		}
+		else{
+			targetUrl = args[0];
+		}
 		final int timeout = 20;
 		final int sendCount = 5;
 		
-		UDPManager manager = new UDPManager("localhost",
+		UDPManager manager = new UDPManager(targetUrl,
 				IPingPongConstants.SENDER_LISTENING_PORT,
-				IPingPongConstants.RECEIVER_LISTENING_PORT, timeout);
+				IPingPongConstants.RECEIVER_LISTENING_PORT, 0);
 		UDPSender sender = new UDPSender(IPingPongConstants.SENDER_MSG,
 				IPingPongConstants.RECEIVER_MSG, manager, sendCount);
 		sender.run();

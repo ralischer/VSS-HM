@@ -28,8 +28,7 @@ public class UDPManager {
 	protected UDPManager(String destinationIP, int sourcePort,
 			int destinationPort, int timeout) throws SocketException,
 			UnknownHostException {
-		this.socket = new DatagramSocket(sourcePort,
-				InetAddress.getByName(destinationIP));
+		this.socket = new DatagramSocket(sourcePort);
 		socket.setSoTimeout(timeout);
 		this.destinationPort = destinationPort;
 		this.destination = InetAddress.getByName(destinationIP);
@@ -43,7 +42,7 @@ public class UDPManager {
 	 * @throws IOException
 	 */
 	public void sendMessage(String message, int id) throws IOException {
-		ArrayList<byte[]> payload = new ArrayList<>();
+		ArrayList<byte[]> payload = new ArrayList<byte[]>();
 		payload.add(new byte[] { (byte) id });
 		payload.add(message.getBytes());
 		DatagramPacket data = PayloadDatagramPackage.createDatagramPacket(

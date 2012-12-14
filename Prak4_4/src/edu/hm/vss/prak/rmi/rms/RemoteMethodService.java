@@ -9,7 +9,7 @@ import java.lang.reflect.Proxy;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import edu.hm.vss.prak.rmi.rms.exceptions.ClassNotBindedException;
+import edu.hm.vss.prak.rmi.rms.exceptions.ClassUnboundException;
 
 public class RemoteMethodService {
 
@@ -193,7 +193,7 @@ public class RemoteMethodService {
 	 *            das interface das auf dem Server Verfügbar sein soll.
 	 * @return ein Proxy/Stub Objekt welches die Methodenaufrufe des Client zum
 	 *         Server weiterleitet.
-	 * @throws ClassNotBindedException
+	 * @throws ClassUnboundException
 	 *             falls zum Interface auf dem Server keine Implementierung
 	 *             existiert.
 	 * @throws UnknownHostException
@@ -202,13 +202,13 @@ public class RemoteMethodService {
 	 * @throws IOException
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T getInstace(Class<T> clazz) throws ClassNotBindedException,
+	public <T> T getInstace(Class<T> clazz) throws ClassUnboundException,
 			UnknownHostException, IOException {
 		Client client = new Client(serverAddress, serverPort);
 		if (client.isClassAvailable(clazz))
 			return (T) Proxy.newProxyInstance(clazz.getClassLoader(),
 					new Class[] { clazz }, new ClientInvocationHandler(client));
 		else
-			throw new ClassNotBindedException();
+			throw new ClassUnboundException();
 	}
 }

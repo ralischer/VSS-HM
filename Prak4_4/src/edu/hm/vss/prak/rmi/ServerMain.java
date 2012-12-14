@@ -13,7 +13,7 @@ import edu.hm.vss.prak.rmi.rms.exceptions.BindingException;
 public class ServerMain {
 
 	public static void main(String... args) throws IOException, BindingException {
-		Server server = RemoteMethodService.getServerInstance(8888);
+		Server server = RemoteMethodService.getServerInstance(12000);
 		server.bind(Foo.class, FooImpl.class);
 		server.bind(SimpleTasks.class, SimpleTaskImpl.class);
 		server.start();

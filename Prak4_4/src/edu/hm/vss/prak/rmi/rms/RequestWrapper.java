@@ -2,6 +2,11 @@ package edu.hm.vss.prak.rmi.rms;
 
 import java.io.Serializable;
 
+/**
+ * Wrapper um Serialisierung der Methodenaufrufe zu erleichtern.
+ * @author Reinhard Alischer
+ *
+ */
 public class RequestWrapper implements Serializable{
 
 	/**
